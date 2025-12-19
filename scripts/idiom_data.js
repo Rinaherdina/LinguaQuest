@@ -1,7 +1,7 @@
 // scripts/idiom_data.js
 
 // Array ini berisi 204 objek idiom Anda yang sudah terformat
-export const IDIOM_LIST = [
+window.dictionaryData = [
     // 4 Entri Awal
     { id: 'idiom_001', type: 'IDIOM', target: 'Spill the beans', meaning: 'Membocorkan rahasia', level: 'A1', gratis: true },
     { id: 'idiom_002', type: 'IDIOM', target: 'Break the ice', meaning: 'Memecahkan suasana kaku', level: 'A1', gratis: true },

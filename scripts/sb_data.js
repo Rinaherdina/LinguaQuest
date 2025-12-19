@@ -2,42 +2,39 @@
 
 // Konstanta untuk Sentence Builder
 const TYPE_SB = 'SENTENCE_BUILDER';
+SENTENCE_BUILDER_EXERCISES = [
 
-/**
- * SENTENCE_BUILDER_EXERCISES
- * Total: 1000 soal.
- * - 5 soal pertama di sini ditandai sebagai 'gratis' untuk keperluan demonstrasi/harian.
- * - Soal-soal gratis ini akan diakses secara siklus (1 per hari).
- * - Soal sisanya (id 6 ke atas) tidak perlu ditandai 'gratis' dan hanya dapat diakses oleh Premium.
- */
-export const SENTENCE_BUILDER_EXERCISES = [
-    // --- GRATIS / SOAL WAJIB (Diakses siklus harian) ---
     {
-        id: 'sb_1', 
+        id: 'sb_1',
+        level: 1, 
         type: TYPE_SB, 
         target: "I finished my homework this morning.",
         gratis: true
     },
     {
-        id: 'sb_2', 
+        id: 'sb_2',
+        level: 1, 
         type: TYPE_SB, 
         target: "She always forgets her keys.",
         gratis: true
     },
     {
-        id: 'sb_3', 
+        id: 'sb_3',
+        level: 1, 
         type: TYPE_SB, 
         target: "They are currently studying English grammar.",
         gratis: true
     },
     {
-        id: 'sb_4', 
+        id: 'sb_4',
+        level: 1, 
         type: TYPE_SB, 
         target: "We went to the market yesterday.",
         gratis: true
     },
     {
-        id: 'sb_5', 
+        id: 'sb_5',
+        level: 1, 
         type: TYPE_SB, 
         target: "The quick brown fox jumps over the lazy dog.",
         gratis: true
@@ -45,925 +42,1079 @@ export const SENTENCE_BUILDER_EXERCISES = [
 
     // --- PREMIUM (995 soal sisanya akan dimasukkan di sini) ---
     {
-        id: 'sb_6', 
+        id: 'sb_6',
+        level: 1, 
         type: TYPE_SB, 
         target: "My mother was cooking dinner when I arrived.", // Past Continuous
         gratis: false 
     },
     {
-        id: 'sb_7', 
+        id: 'sb_7',
+        level: 1, 
         type: TYPE_SB, 
         target: "They will have finished the project by next Monday.", // Future Perfect
         gratis: false
     },
     {
-        id: 'sb_8', 
+        id: 'sb_8',
+        level: 1, 
         type: TYPE_SB, 
         target: "Does he drink coffee every morning?", // Simple Present
         gratis: false
     },
     {
-        id: 'sb_9', 
+        id: 'sb_9',
+        level: 1, 
         type: TYPE_SB, 
         target: "We had been waiting for the bus for an hour before it came.", // Past Perfect Continuous
         gratis: false
     },
     {
-        id: 'sb_10', 
+        id: 'sb_10',
+        level: 1, 
         type: TYPE_SB, 
         target: "She would buy a new car if she had enough money.", // Simple Past Future
         gratis: false
     },
     {
-        id: 'sb_11', 
+        id: 'sb_11',
+        level: 1, 
         type: TYPE_SB, 
         target: "I have not eaten sushi since last year.", // Present Perfect
         gratis: false
     },
     {
-        id: 'sb_12', 
+        id: 'sb_12',
+        level: 1, 
         type: TYPE_SB, 
         target: "The meeting is not going to start at 10 AM tomorrow.", // Simple Future
         gratis: false
     },
     {
-        id: 'sb_13', 
+        id: 'sb_13',
+        level: 1, 
         type: TYPE_SB, 
         target: "Had the students left before the teacher entered the classroom?", // Past Perfect
         gratis: false
     },
     {
-        id: 'sb_14', 
+        id: 'sb_14',
+        level: 1, 
         type: TYPE_SB, 
         target: "What will they be discussing in the next conference?", // Future Continuous
         gratis: false
     },
     {
-        id: 'sb_15', 
+        id: 'sb_15',
+        level: 1, 
         type: TYPE_SB, 
         target: "The company has been expanding its business aggressively recently.", // Present Perfect Continuous
         gratis: false
     },
     {
-        id: 'sb_16', 
+        id: 'sb_16',
+        level: 1, 
         type: TYPE_SB, 
         target: "The ancient ruins were built thousands of years ago.", // Simple Past (Passive Voice)
         gratis: false
     },
     {
-        id: 'sb_17', 
+        id: 'sb_17',
+        level: 1, 
         type: TYPE_SB, 
         target: "Will you be joining us for lunch tomorrow?", // Future Continuous
         gratis: false
     },
     {
-        id: 'sb_18', 
+        id: 'sb_18',
+        level: 1, 
         type: TYPE_SB, 
         target: "If I were rich, I would travel the world.", // Simple Past Future (Conditional)
         gratis: false
     },
     {
-        id: 'sb_19', 
+        id: 'sb_19',
+        level: 1, 
         type: TYPE_SB, 
         target: "She had read three books before her vacation ended.", // Past Perfect
         gratis: false
     },
     {
-        id: 'sb_20', 
+        id: 'sb_20',
+        level: 1, 
         type: TYPE_SB, 
         target: "They do not understand the complex instructions.", // Simple Present
         gratis: false
     },
     {
-        id: 'sb_21', 
+        id: 'sb_21',
+        level: 1, 
         type: TYPE_SB, 
         target: "The workers will be installing the new system all morning.", // Future Continuous
         gratis: false
     },
     {
-        id: 'sb_22', 
+        id: 'sb_22',
+        level: 1, 
         type: TYPE_SB, 
         target: "How long has he been jogging every day?", // Present Perfect Continuous
         gratis: false
     },
     {
-        id: 'sb_23', 
+        id: 'sb_23',
+        level: 1, 
         type: TYPE_SB, 
         target: "I was sleeping when the phone rang.", // Past Continuous
         gratis: false
     },
     {
-        id: 'sb_24', 
+        id: 'sb_24',
+        level: 1, 
         type: TYPE_SB, 
         target: "By 2030, we will have developed a renewable energy source.", // Future Perfect
         gratis: false
     },
     {
-        id: 'sb_25', 
+        id: 'sb_25',
+        level: 1, 
         type: TYPE_SB, 
         target: "Did you go to the cinema last night?", // Simple Past
         gratis: false
     },
     {
-        id: 'sb_26', 
+        id: 'sb_26',
+        level: 1, 
         type: TYPE_SB, 
         target: "If they had invited me, I would have attended the party.", // Past Future Perfect (Conditional Type 3)
         gratis: false
     },
     {
         id: 'sb_27', 
+        level: 1,
         type: TYPE_SB, 
         target: "The sun rises in the east and sets in the west.", // Simple Present (Fakta Umum)
         gratis: false
     },
     {
-        id: 'sb_28', 
+        id: 'sb_28',
+        level: 1, 
         type: TYPE_SB, 
         target: "Is the baby sleeping in the crib right now?", // Present Continuous
         gratis: false
     },
     {
-        id: 'sb_29', 
+        id: 'sb_29',
+        level: 1, 
         type: TYPE_SB, 
         target: "The mechanic has just fixed my broken car.", // Present Perfect
         gratis: false
     },
     {
-        id: 'sb_30', 
+        id: 'sb_30',
+        level: 1, 
         type: TYPE_SB, 
         target: "Before she moved here, she had lived in London for ten years.",// Past Perfect
         gratis: false
     },
     {
-        id: 'sb_31', 
+        id: 'sb_31',
+        level: 1, 
         type: TYPE_SB, 
         target: "We are going to visit our grandparents next weekend.", // Simple Future ('Going to')
         gratis: false
     },
     {
-        id: 'sb_32', 
+        id: 'sb_32',
+        level: 1, 
         type: TYPE_SB, 
         target: "The construction workers were working hard all day yesterday.", // Past Continuous
         gratis: false
     },
     {
-        id: 'sb_33', 
+        id: 'sb_33',
+        level: 1, 
         type: TYPE_SB, 
         target: "By the time he graduates, he will have studied abroad twice.", // Future Perfect
         gratis: false
     },
     {
-        id: 'sb_34', 
+        id: 'sb_34',
+        level: 1, 
         type: TYPE_SB, 
         target: "How long had you been studying before the power went out?", // Past Perfect Continuous
         gratis: false
     },
     {
-        id: 'sb_35', 
+        id: 'sb_35',
+        level: 1, 
         type: TYPE_SB, 
         target: "They would not accept the offer if it were not beneficial.", // Simple Past Future
         gratis: false
     },
     {
-        id: 'sb_36', 
+        id: 'sb_36',
+        level: 1, 
         type: TYPE_SB, 
         target: "Has the team been practicing since early this morning?", // Present Perfect Continuous
         gratis: false
     },
     {
-        id: 'sb_37', 
+        id: 'sb_37',
+        level: 1, 
         type: TYPE_SB, 
         target: "The company will not be launching the product this quarter.", // Future Continuous
         gratis: false
     },
     {
-        id: 'sb_38', 
+        id: 'sb_38',
+        level: 1, 
         type: TYPE_SB, 
         target: "We always celebrate Christmas with a huge dinner.", // Simple Present
         gratis: false
     },
     {
-        id: 'sb_39', 
+        id: 'sb_39',
+        level: 1, 
         type: TYPE_SB, 
         target: "Why were you shouting at the meeting earlier?", // Past Continuous
         gratis: false
     },
     {
-        id: 'sb_40', 
+        id: 'sb_40',
+        level: 1, 
         type: TYPE_SB, 
         target: "I have never seen such a beautiful sunset before.", // Present 
         gratis: false
     },
     {
-        id: 'sb_41', 
+        id: 'sb_41',
+        level: 1, 
         type: TYPE_SB, 
         target: "If they had done their research, they would not have failed the test.", // Past Future Perfect
         gratis: false
     },
     {
-        id: 'sb_42', 
+        id: 'sb_42',
+        level: 1, 
         type: TYPE_SB, 
         target: "Will the doctor have arrived by the time the patient comes?", // Future Perfect
         gratis: false
     },
     {
-        id: 'sb_43', 
+        id: 'sb_43',
+        level: 1, 
         type: TYPE_SB, 
         target: "The kids had been playing outside until it got dark.", // Past Perfect Continuous
         gratis: false
     },
     {
         id: 'sb_44', 
+        level: 1,
         type: TYPE_SB, 
         target: "She doesn't like spicy food at all.", // Simple Present
         gratis: false
     },
     {
-        id: 'sb_45', 
+        id: 'sb_45',
+        level: 1, 
         type: TYPE_SB, 
         target: "We shall overcome this challenge together.", // Simple Future (Formal/Determination)
         gratis: false
     },
     {
         id: 'sb_46', 
+        level: 1,
         type: TYPE_SB, 
         target: "The whole neighborhood was experiencing a power outage at 8 PM.", // Past Continuous
         gratis: false
     },
     {
-        id: 'sb_47', 
+        id: 'sb_47',
+        level: 1, 
         type: TYPE_SB, 
         target: "Have you been reading that book for months?", // Present Perfect Continuous
         gratis: false
     },
     {
-        id: 'sb_48', 
+        id: 'sb_48',
+        level: 1, 
         type: TYPE_SB, 
         target: "I would be finishing my work now if I had started earlier.", // Past Future Continuous
         gratis: false
     },
     {
-        id: 'sb_49', 
+        id: 'sb_49',
+        level: 1, 
         type: TYPE_SB, 
         target: "The letter was delivered two days ago.", // Simple Past
         gratis: false
     },
     {
-        id: 'sb_50', 
+        id: 'sb_50',
+        level: 1, 
         type: TYPE_SB, 
         target: "Tomorrow at this time, I will be flying over the Pacific Ocean.", // Future Continuous
         gratis: false
     },
     {
-        id: 'sb_51', 
+        id: 'sb_51',
+        level: 1, 
         type: TYPE_SB, 
         target: "The train usually arrives exactly at noon.", // Simple Present
         gratis: false
     },
     {
-        id: 'sb_51', 
+        id: 'sb_51',
+        level: 1, 
         type: TYPE_SB, 
         target: "The train usually arrives exactly at noon.", // Simple Present
         gratis: false
     },
     {
-        id: 'sb_52', 
+        id: 'sb_52',
+        level: 1, 
         type: TYPE_SB, 
         target: "He had been teaching at the university for five years when he retired.", // Past Perfect Continuous
         gratis: false
     },
     {
-        id: 'sb_53', 
+        id: 'sb_53',
+        level: 1, 
         type: TYPE_SB, 
         target: "Will the guests have left before the cleaner arrives?", // Future Perfect
         gratis: false
     },
     {
-        id: 'sb_54', 
+        id: 'sb_54',
+        level: 1, 
         type: TYPE_SB, 
         target: "Why did you call me so late last night?", // Simple Past
         gratis: false
     },
     {
-        id: 'sb_55', 
+        id: 'sb_55',
+        level: 1, 
         type: TYPE_SB, 
         target: "I would not have recognized him if he hadn't worn that hat.", // Past Future Perfect
         gratis: false
     },
     {
         id: 'sb_56', 
+        level: 1,
         type: TYPE_SB, 
         target: "The children are playing hide-and-seek in the garden.", // Present Continuous
         gratis: false
     },
     {
         id: 'sb_57', 
+        level: 1,
         type: TYPE_SB, 
         target: "Has she finished writing her second novel yet?", // Present Perfect
         gratis: false
     },
     {
-        id: 'sb_58', 
+        id: 'sb_58',
+        level: 1, 
         type: TYPE_SB, 
         target: "Tomorrow, we will be attending an important business seminar.", // Future Continuous
         gratis: false
     },
     {
         id: 'sb_59', 
+        level: 1,
         type: TYPE_SB, 
         target: "They were arguing loudly when the manager stepped in.", // Past Continuous
         gratis: false
     },
     {
         id: 'sb_60', 
+        level: 1,
         type: TYPE_SB, 
         target: "If I found a wallet, I would return it to the owner.", // Simple Past Future (Conditional Type 2)
         gratis: false
     },
     {
-        id: 'sb_61', 
+        id: 'sb_61',
+        level: 1, 
         type: TYPE_SB, 
         target: "The government will implement the new policy next month.", // Simple Future
         gratis: false
     },
     {
-        id: 'sb_62', 
+        id: 'sb_62',
+        level: 1, 
         type: TYPE_SB, 
         target: "How long have they been discussing this sensitive issue?", // Present Perfect Continuous
         gratis: false
     },
     {
-        id: 'sb_63', 
+        id: 'sb_63',
+        level: 1, 
         type: TYPE_SB, 
         target: "The house looked clean because she had already swept the floor.", // Past Perfect
         gratis: false
     },
     {
-        id: 'sb_64', 
+        id: 'sb_64',
+        level: 1, 
         type: TYPE_SB, 
         target: "We would be traveling now if the flight hadn't been canceled.", // Past Future Continuous
         gratis: false
     },
     {
-        id: 'sb_65', 
+        id: 'sb_65',
+        level: 1, 
         type: TYPE_SB, 
         target: "They do not believe the news they heard on the radio.", // Simple Present
         gratis: false
     },
     {
-        id: 'sb_66', 
+        id: 'sb_66',
+        level: 1, 
         type: TYPE_SB, 
         target: "She was reading a mystery book while her brother was watching TV.", // Past Continuous
         gratis: false
     },
     {
-        id: 'sb_67', 
+        id: 'sb_67',
+        level: 1, 
         type: TYPE_SB, 
         target: "By the end of the day, I will have sent all the invitations.", // Future Perfect
         gratis: false
     },
     {
         id: 'sb_68', 
+        level: 1,
         type: TYPE_SB, 
         target: "Has the cat been sleeping under the table since breakfast?", // Present Perfect Continuous
         gratis: false
     },
     {
-        id: 'sb_69', 
+        id: 'sb_69',
+        level: 1, 
         type: TYPE_SB, 
         target: "Did the audience enjoy the concert last weekend?", // Simple Past
         gratis: false
     },
     {
-        id: 'sb_70', 
+        id: 'sb_70',
+        level: 1, 
         type: TYPE_SB, 
         target: "He has broken his leg and cannot walk for a month.", // Present Perfect
         gratis: false
     },
     {
-        id: 'sb_71', 
+        id: 'sb_71',
+        level: 1, 
         type: TYPE_SB, 
         target: "The movie is starting in five minutes; we must hurry.", // Present Continuous
         gratis: false
     },
     {
         id: 'sb_72', 
+        level: 1,
         type: TYPE_SB, 
         target: "If I were you, I would accept the job immediately.", // Simple Past Future
         gratis: false
     },
     {
-        id: 'sb_73', 
+        id: 'sb_73',
+        level: 1, 
         type: TYPE_SB, 
         target: "The chef would have prepared a feast if we had arrived on time.", // Past Future Perfect
         gratis: false
     },
     {
-        id: 'sb_74', 
+        id: 'sb_74',
+        level: 1, 
         type: TYPE_SB, 
         target: "They will not be repairing the road next week.", // Future Continuous
         gratis: false
     },
     {
-        id: 'sb_75', 
+        id: 'sb_75',
+        level: 1, 
         type: TYPE_SB, 
         target: "The storm had been raging violently for hours before it subsided.", // Past Perfect Continuous
         gratis: false
     },
     {
         id: 'sb_76', 
+        level: 1,
         type: TYPE_SB, 
         target: "Water boils at 100 degrees Celsius.", // Simple Present
         gratis: false
     },
     {
         id: 'sb_77', 
+        level: 1,
         type: TYPE_SB, 
         target: "The entire team had signed the contract before the deadline.", // Past Perfect
         gratis: false
     },
     {
-        id: 'sb_78', 
+        id: 'sb_78',
+        level: 1, 
         type: TYPE_SB, 
         target: "Is the postman delivering the mail right now?", // Present Continuous
         gratis: false
     },
     {
-        id: 'sb_79', 
+        id: 'sb_79',
+        level: 1, 
         type: TYPE_SB, 
         target: "We are not going to tolerate any misbehavior.", // Simple Future ('Going to')
         gratis: false
     },
     {
         id: 'sb_80', 
+        level: 1,
         type: TYPE_SB, 
         target: "I have known him since elementary school.", // Present Perfect
         gratis: false
     },
     {
-        id: 'sb_81', 
+        id: 'sb_81',
+        level: 1, 
         type: TYPE_SB, 
         target: "What were you doing when the earthquake occurred?", // Past Continuous
         gratis: false
     },
     {
-        id: 'sb_82', 
+        id: 'sb_82',
+        level: 1, 
         type: TYPE_SB, 
         target: "She would study harder if the material were more interesting.", // Simple Past Future
         gratis: false
     },
     {
-        id: 'sb_83', 
+        id: 'sb_83',
+        level: 1, 
         type: TYPE_SB, 
         target: "By next year, I will have saved enough money for a trip.", // Future Perfect
         gratis: false
     },
     {
-        id: 'sb_84', 
+        id: 'sb_84',
+        level: 1, 
         type: TYPE_SB, 
         target: "Had she been expecting the surprise party?", // Past Perfect Continuous
         gratis: false
     },
     {
-        id: 'sb_85', 
+        id: 'sb_85',
+        level: 1, 
         type: TYPE_SB, 
         target: "The scientists discovered a new galaxy last night.", // Simple Past
         gratis: false
     },
     {
-        id: 'sb_86', 
+        id: 'sb_86',
+        level: 1, 
         type: TYPE_SB, 
         target: "The chef has been baking fresh bread all morning.", // Present Perfect Continuous
         gratis: false
     },
     {
-        id: 'sb_87', 
+        id: 'sb_87',
+        level: 1, 
         type: TYPE_SB, 
         target: "The company will be launching its new marketing campaign soon.", // Future Continuous
         gratis: false
     },
     {
-        id: 'sb_88', 
+        id: 'sb_88',
+        level: 1, 
         type: TYPE_SB, 
         target: "They would have been relaxing on the beach if they had caught the flight.", // Past Future Perfect Continuous
         gratis: false
     },
     {
-        id: 'sb_89', 
+        id: 'sb_89',
+        level: 1, 
         type: TYPE_SB, 
         target: "Does the washing machine make a loud noise when it spins?", // Simple Present
         gratis: false
     },
     {
-        id: 'sb_90', 
+        id: 'sb_90',
+        level: 1, 
         type: TYPE_SB, 
         target: "I hadn't seen him for years until I met him at the airport.", // Past Perfect
         gratis: false
     },
     {
-        id: 'sb_91', 
+        id: 'sb_91',
+        level: 1, 
         type: TYPE_SB, 
         target: "The technician is fixing the broken pipes at this very moment.", // Present Continuous
         gratis: false
     },
     {
-        id: 'sb_92', 
+        id: 'sb_92',
+        level: 1, 
         type: TYPE_SB, 
         target: "We shall overcome this pandemic together.", // Simple Future
         gratis: false
     },
     {
-        id: 'sb_93', 
+        id: 'sb_93',
+        level: 1, 
         type: TYPE_SB, 
         target: "The baby was crying because he was hungry.", // Past Continuous
         gratis: false
     },
     {
-        id: 'sb_94', 
+        id: 'sb_94',
+        level: 1, 
         type: TYPE_SB, 
         target: "Have you ever traveled outside of your country?", // Present Perfect
         gratis: false
     },
     {
-        id: 'sb_95', 
+        id: 'sb_95',
+        level: 1, 
         type: TYPE_SB, 
         target: "By 2040, the world population will have grown significantly.", // Future Perfect
         gratis: false
     },
     {
-        id: 'sb_96', 
+        id: 'sb_96',
+        level: 1, 
         type: TYPE_SB, 
         target: "Would you be willing to help me if I asked you?", // Simple Past Future
         gratis: false
     },
     {
-        id: 'sb_97', 
+        id: 'sb_97',
+        level: 1, 
         type: TYPE_SB, 
         target: "The students had been working on the assignment all week.", // Past Perfect Continuous
         gratis: false
     },
     {
-        id: 'sb_98', 
+        id: 'sb_98',
+        level: 1, 
         type: TYPE_SB, 
         target: "What did the doctor advise you to do?", // Simple Past
         gratis: false
     },
     {
-        id: 'sb_99', 
+        id: 'sb_99',
+        level: 1, 
         type: TYPE_SB, 
         target: "If they had known the risk, they would not have invested.", // Past Future Perfect
         gratis: false
     },
     {
-        id: 'sb_100', 
+        id: 'sb_100',
+        level: 1, 
         type: TYPE_SB, 
         target: "I will be waiting for you at the gate when your flight lands.", // Future Continuous
         gratis: false
     },
     {
-        id: 'sb_101', 
+        id: 'sb_101',
+        level: 1,  
         type: TYPE_SB, 
         target: "The students were submitting their essays when the bell rang.", // Past Continuous
         gratis: false
     },
     {
-        id: 'sb_102', 
+        id: 'sb_102',
+        level: 1, 
         type: TYPE_SB, 
         target: "By the end of this month, I will have traveled to three different continents.", // Future Perfect
         gratis: false
     },
     {
-        id: 'sb_103', 
+        id: 'sb_103',
+        level: 1, 
         type: TYPE_SB, 
         target: "If he had trained harder, he would have won the gold medal.", // Past Future Perfect
         gratis: false
     },
     {
-        id: 'sb_104', 
+        id: 'sb_104',
+        level: 1, 
         type: TYPE_SB, 
         target: "She always takes the bus to work every day.", // Simple Present
         gratis: false
     },
     {
-        id: 'sb_105', 
+        id: 'sb_105',
+        level: 1, 
         type: TYPE_SB, 
         target: "The volcano has not erupted since 1990.", // Present Perfect
         gratis: false
     },
     {
-        id: 'sb_106', 
+        id: 'sb_106',
+        level: 1, 
         type: TYPE_SB, 
         target: "What is your sister cooking for dinner tonight?", // Present Continuous
         gratis: false
     },
     {
-        id: 'sb_107', 
+        id: 'sb_107',
+        level: 1, 
         type: TYPE_SB, 
         target: "Did you finish the entire report yesterday afternoon?", // Simple Past
         gratis: false
     },
     {
-        id: 'sb_108', 
+        id: 'sb_108',
+        level: 1, 
         type: TYPE_SB, 
         target: "They will be performing their new song at the stadium tomorrow night.", // Future Continuous
         gratis: false
     },
     {
-        id: 'sb_109', 
+        id: 'sb_109',
+        level: 1, 
         type: TYPE_SB, 
         target: "He had been trying to contact the customer for hours before he succeeded.", // Past Perfect Continuous
         gratis: false
     },
     {
-        id: 'sb_110', 
+        id: 'sb_110',
+        level: 1, 
         type: TYPE_SB, 
         target: "If I found a suitcase full of money, I would quit my job.", // Simple Past Future
         gratis: false
     },
     {
-        id: 'sb_111', 
+        id: 'sb_111',
+        level: 1, 
         type: TYPE_SB, 
         target: "We are going to buy a new refrigerator next week.", // Simple Future ('Going to')
         gratis: false
     },
     {
-        id: 'sb_112', 
+        id: 'sb_112',
+        level: 1, 
         type: TYPE_SB, 
         target: "The manager had left the office before the client arrived.", // Past Perfect
         gratis: false
     },
     {
-        id: 'sb_113', 
+        id: 'sb_113',
+        level: 1, 
         type: TYPE_SB, 
         target: "Has the machine been operating smoothly since the repair?", // Present Perfect Continuous
         gratis: false
     },
     {
-        id: 'sb_114', 
+        id: 'sb_114',
+        level: 1, 
         type: TYPE_SB, 
         target: "The team would be celebrating their victory now if they hadn't lost the final game.", // Past Future Continuous
         gratis: false
     },
     {
-        id: 'sb_115', 
+        id: 'sb_115',
+        level: 1, 
         type: TYPE_SB, 
         target: "The earth revolves around the sun.", // Simple Present (Fakta Ilmiah)
         gratis: false
     },
     {
-        id: 'sb_116', 
+        id: 'sb_116',
+        level: 1, 
         type: TYPE_SB, 
         target: "I have already watched that movie three times.", // Present Perfect
         gratis: false
     },
     {
-        id: 'sb_117', 
+        id: 'sb_117',
+        level: 1, 
         type: TYPE_SB, 
         target: "The children were drawing pictures in the living room this morning.", // Past Continuous
         gratis: false
     },
     {
-        id: 'sb_118', 
+        id: 'sb_118',
+        level: 1, 
         type: TYPE_SB, 
         target: "Will you have saved enough money for the down payment by Christmas?", // Future Perfect
         gratis: false
     },
     {
-        id: 'sb_119', 
+        id: 'sb_119',
+        level: 1, 
         type: TYPE_SB, 
         target: "He would not buy a sports car even if he became a millionaire.", // Simple Past Future
         gratis: false
     },
     {
-        id: 'sb_120', 
+        id: 'sb_120',
+        level: 1, 
         type: TYPE_SB, 
         target: "The detective did not find any evidence at the crime scene.", // Simple Past
         gratis: false
     },
     {
-        id: 'sb_121', 
+        id: 'sb_121',
+        level: 1, 
         type: TYPE_SB, 
         target: "We will be studying the history of Asia in the next semester.", // Future Continuous
         gratis: false
     },
     {
-        id: 'sb_122', 
+        id: 'sb_122',
+        level: 1, 
         type: TYPE_SB, 
         target: "How long have they been dating?", // Present Perfect Continuous
         gratis: false
     },
     {
-        id: 'sb_123', 
+        id: 'sb_123',
+        level: 1, 
         type: TYPE_SB, 
         target: "She had not finished her presentation when the CEO walked in.", // Past Perfect
         gratis: false
     },
     {
-        id: 'sb_124', 
+        id: 'sb_124',
+        level: 1, 
         type: TYPE_SB, 
         target: "If the weather had been nice, we would have gone hiking.", // Past Future Perfect
         gratis: false
     },
     {
-        id: 'sb_125', 
+        id: 'sb_125',
+        level: 1, 
         type: TYPE_SB, 
         target: "Does your neighbour often complain about the noise?", // Simple Present
         gratis: false
     },
     {
-        id: 'sb_126', 
+        id: 'sb_126',
+        level: 1, 
         type: TYPE_SB, 
         target: "The engineer is designing a new prototype at the moment.", // Present Continuous
         gratis: false
     },
     {
-        id: 'sb_127', 
+        id: 'sb_127',
+        level: 1, 
         type: TYPE_SB, 
         target: "The athlete broke the world record in the final round.", // Simple Past
         gratis: false
     },
     {
-        id: 'sb_128', 
+        id: 'sb_128',
+        level: 1, 
         type: TYPE_SB, 
         target: "We shall overcome any obstacles in our way.", // Simple Future
         gratis: false
     },
     {
-        id: 'sb_129', 
+        id: 'sb_129',
+        level: 1, 
         type: TYPE_SB, 
         target: "They had been planning the move for months before they told anyone.", // Past Perfect Continuous
         gratis: false
     },
     {
-        id: 'sb_130', 
+        id: 'sb_130',
+        level: 1, 
         type: TYPE_SB, 
         target: "What will you have achieved by your 30th birthday?", // Future Perfect
         gratis: false
     },
     {
-        id: 'sb_131', 
+        id: 'sb_131',
+        level: 1, 
         type: TYPE_SB, 
         target: "She has been working from home since the start of the pandemic.", // Present Perfect Continuous
         gratis: false
     },
     {
-        id: 'sb_132', 
+        id: 'sb_132',
+        level: 1, 
         type: TYPE_SB, 
         target: "If I were the boss, I would increase everyone's salary.", // Simple Past Future
         gratis: false
     },
     {
-        id: 'sb_133', 
+        id: 'sb_133',
+        level: 1, 
         type: TYPE_SB, 
         target: "The children were not paying attention during the lesson.", // Past Continuous
         gratis: false
     },
     {
-        id: 'sb_134', 
+        id: 'sb_134',
+        level: 1, 
         type: TYPE_SB, 
         target: "The results have not been officially announced yet.", // Present Perfect
         gratis: false
     },
     {
-        id: 'sb_135', 
+        id: 'sb_135',
+        level: 1, 
         type: TYPE_SB, 
         target: "We are going to adopt a rescue dog soon.", // Simple Future ('Going to')
         gratis: false
     },
     {
-        id: 'sb_136', 
+        id: 'sb_136',
+        level: 1, 
         type: TYPE_SB, 
         target: "The security guard had noticed the broken window before the alarm went off.", // Past Perfect
         gratis: false
     },
     {
-        id: 'sb_137', 
+        id: 'sb_137',
+        level: 1, 
         type: TYPE_SB, 
         target: "Will the professor be giving a lecture on quantum physics next week?", // Future Continuous
         gratis: false
     },
     {
-        id: 'sb_138', 
+        id: 'sb_138',
+        level: 1, 
         type: TYPE_SB, 
         target: "He would have been trying to fix the computer for hours if I hadn't stopped him.", // Past Future Perfect Continuous
         gratis: false
     },
     {
-        id: 'sb_139', 
+        id: 'sb_139',
+        level: 1, 
         type: TYPE_SB, 
         target: "My flight leaves at 6 AM tomorrow morning.", // Simple Present (Jadwal)
         gratis: false
     },
     {
-        id: 'sb_140', 
+        id: 'sb_140',
+        level: 1, 
         type: TYPE_SB, 
         target: "The hikers walked ten miles before they reached the summit.", // Simple Past
         gratis: false
     },
     {
-        id: 'sb_141', 
+        id: 'sb_141',
+        level: 1, 
         type: TYPE_SB, 
         target: "They have been living in Jakarta since 2010.", // Present Perfect Continuous
         gratis: false
     },
     {
-        id: 'sb_142', 
+        id: 'sb_142',
+        level: 1, 
         type: TYPE_SB, 
         target: "By this time next month, the renovations will have been completed.", // Future Perfect
         gratis: false
     },
     {
-        id: 'sb_143', 
+        id: 'sb_143',
+        level: 1,
         type: TYPE_SB, 
         target: "I was listening to the radio when I heard the shocking news.", // Past Continuous
         gratis: false
     },
     {
-        id: 'sb_144', 
+        id: 'sb_144',
+        level: 1, 
         type: TYPE_SB, 
         target: "If they had apologized, she would have forgiven them.", // Past Future Perfect
         gratis: false
     },
     {
-        id: 'sb_145', 
+        id: 'sb_145',
+        level: 1, 
         type: TYPE_SB, 
         target: "The train will not be stopping at this station due to maintenance.", // Future Continuous
         gratis: false
     },
     {
-        id: 'sb_146', 
+        id: 'sb_146',
+        level: 1, 
         type: TYPE_SB, 
         target: "The dog catches the frisbee every time I throw it.", // Simple Present
         gratis: false
     },
     {
-        id: 'sb_147', 
+        id: 'sb_147',
+        level: 1, 
         type: TYPE_SB, 
         target: "I had already packed my bags when the trip was canceled.", // Past Perfect
         gratis: false
     },
     {
-        id: 'sb_148', 
+        id: 'sb_148',
+        level: 1, 
         type: TYPE_SB, 
         target: "We would be moving into a bigger apartment if we could afford it.", // Simple Past Future
         gratis: false
     },
     {
-        id: 'sb_149', 
+        id: 'sb_149',
+        level: 1, 
         type: TYPE_SB, 
         target: "Why have you been avoiding my calls all day?", // Present Perfect Continuous
         gratis: false
     },
     {
-        id: 'sb_150', 
+        id: 'sb_150',
+        level: 1, 
         type: TYPE_SB, 
         target: "The company has offered him a promotion this week.", // Present Perfect
         gratis: false
     },
     {
-        id: 'sb_151', 
+        id: 'sb_151',
+        level: 1, 
         type: TYPE_SB, 
         target: "If the economy improves, unemployment will decrease.", // Simple Future (Conditional Type 1)
         gratis: false
     },
     {
-        id: 'sb_152', 
+        id: 'sb_152',
+        level: 1, 
         type: TYPE_SB, 
         target: "Had they known the truth, they would not have trusted him.", // Past Future Perfect (Terkait Conditional Type 3)
         gratis: false
     },
     {
-        id: 'sb_153', 
+        id: 'sb_153',
+        level: 1, 
         type: TYPE_SB, 
         target: "The new café is opening its doors next week.", // Present Continuous (Future Arrangement)
         gratis: false
     },
     {
-        id: 'sb_154', 
+        id: 'sb_154',
+        level: 1, 
         type: TYPE_SB, 
         target: "I have never visited Europe before.", // Present Perfect
         gratis: false
     },
     {
-        id: 'sb_155', 
+        id: 'sb_155',
+        level: 1, 
         type: TYPE_SB, 
         target: "She was doing her laundry when the power went out.", // Past Continuous
         gratis: false
     },
     {
-        id: 'sb_156', 
+        id: 'sb_156',
+        level: 1, 
         type: TYPE_SB, 
         target: "The mailman usually comes around 10 AM.", // Simple Present
         gratis: false
     },
     {
-        id: 'sb_157', 
+        id: 'sb_157',
+        level: 1, 
         type: TYPE_SB, 
         target: "By the time the sun rises, the hikers will have reached the peak.", // Future Perfect
         gratis: false
     },
     {
-        id: 'sb_158', 
+        id: 'sb_158',
+        level: 1, 
         type: TYPE_SB, 
         target: "The children had been waiting for the Santa Claus parade since early morning.", // Past Perfect Continuous
         gratis: false

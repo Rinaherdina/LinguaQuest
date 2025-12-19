@@ -1,842 +1,345 @@
-// scripts/tenses-logic.js
-// Logika inti untuk manipulasi kata kerja, penentuan tenses, dan PENILAIAN 3 TIPE.
+/**
+ * LINGUAQUEST - Tenses & Verb Master Engine (Enhanced Version)
+ * Fitur: 3 Sandbox Forms, Smart Correction, Irregular Verb Integration
+ */
 
-// Pastikan semua import dari data.js sudah benar
-import { TENSES_DATA, PRONOUNS } from './data.js';
-import { IRREGULAR_VERBS } from './irregular_verbs.js';
-
-// ====================================================================
-// --- DATA OBJEK/KETERANGAN LOGIS DEFAULT ---
-// ====================================================================
-const VERB_OBJECT_MAP = {
-    // Kelompok Kata Kerja Makanan
-    'eat': { object: 'an apple', time: 'every day' }, 
-    'drink': { object: 'some water', time: 'after work' },
-    
-    // Kelompok Kata Kerja Aksi/Hiburan
-    'watch': { object: 'a good movie', time: 'on TV' },
-    'read': { object: 'a fantasy book', time: 'last night' },
-    'see': { object: 'the new exhibit', time: 'at the museum' },
-
-    // Kelompok Kata Kerja Gerakan/Perjalanan
-    'go': { object: 'to the park', time: 'in the morning' },
-    'run': { object: 'a marathon', time: 'on the track' },
-    'take': { object: 'the bus', time: 'to the city' },
-
-    // Kelompok Kata Kerja Belajar/Kerja
-    'study': { object: 'the new lesson', time: 'for the exam' },
-    'write': { object: 'an important letter', time: 'quickly' },
-    'speak': { object: 'English fluently', time: 'in class' },
-    'do': { object: 'homework', time: 'at home' },
-    
-    // Default fallback jika tidak ada dalam daftar
-    'default': { object: 'the main task', time: 'every day' } 
+// Gunakan tensesData milik Anda (Level 1 - Level 5)
+const tensesData = {
+    level1: [
+        { id: "s_present", name: "Simple Present", usage: "Kebiasaan & Fakta umum.", v_form: "S + V1(s/es)", n_form: "S + am/is/are + Adj/Noun", ex: ["He drinks milk.", "They are happy."] },
+        { id: "s_past", name: "Simple Past", usage: "Kejadian masa lalu.", v_form: "S + V2", n_form: "S + was/were + Adj/Noun", ex: ["I went to Bali.", "She was sad."] },
+        { id: "s_future", name: "Simple Future", usage: "Rencana masa depan.", v_form: "S + will + V1", n_form: "S + will be + Adj/Noun", ex: ["We will study.", "It will be cold."] }
+    ],
+    level2: [
+        { id: "pres_cont", name: "Present Continuous", usage: "Sedang dilakukan sekarang.", v_form: "S + am/is/are + V-ing", n_form: "-", ex: ["I am eating.", "They are playing."] },
+        { id: "past_cont", name: "Past Continuous", usage: "Sedang terjadi di masa lalu.", v_form: "S + was/were + V-ing", n_form: "-", ex: ["He was sleeping."] },
+        { id: "fut_cont", name: "Future Continuous", usage: "Sedang terjadi nanti.", v_form: "S + will be + V-ing", n_form: "-", ex: ["I will be working."] },
+        { id: "pres_perf", name: "Present Perfect", usage: "Sudah terjadi.", v_form: "S + have/has + V3", n_form: "S + have/has + been", ex: ["I have eaten.", "She has been here."] }
+    ],
+    level3: [
+        { id: "past_perf", name: "Past Perfect", usage: "Sudah selesai sebelum aksi lain.", v_form: "S + had + V3", n_form: "S + had been", ex: ["The train had left."] },
+        { id: "fut_perf", name: "Future Perfect", usage: "Akan sudah selesai.", v_form: "S + will have + V3", n_form: "S + will have been", ex: ["I will have finished."] },
+        { id: "pres_p_cont", name: "Pres. Perf. Continuous", usage: "Sudah dan masih berlangsung.", v_form: "S + have/has + been + V-ing", n_form: "-", ex: ["I have been waiting."] },
+        { id: "past_p_cont", name: "Past Perf. Continuous", usage: "Sudah berlangsung lama di masa lalu.", v_form: "S + had been + V-ing", n_form: "-", ex: ["He had been crying."] }
+    ],
+    level4: [
+        { id: "fut_p_cont", name: "Fut. Perf. Continuous", usage: "Durasi yang akan sudah berlangsung.", v_form: "S + will have been + V-ing", n_form: "-", ex: ["I will have been staying."] },
+        { id: "p_fut", name: "Past Future", usage: "Rencana yang gagal.", v_form: "S + would + V1", n_form: "S + would be", ex: ["I would come."] },
+        { id: "p_fut_cont", name: "Past Future Cont.", usage: "Akan sedang terjadi di masa lalu.", v_form: "S + would be + V-ing", n_form: "-", ex: ["He would be sleeping."] }
+    ],
+    level5: [
+        { id: "p_fut_perf", name: "Past Future Perfect", usage: "Seharusnya sudah terjadi.", v_form: "S + would have + V3", n_form: "S + would have been", ex: ["She would have known."] },
+        { id: "p_fut_p_cont", name: "Past Fut. Perf. Cont.", usage: "Durasi yang seharusnya sudah berjalan.", v_form: "S + would have been + V-ing", n_form: "-", ex: ["We would have been living."] }
+    ]
 };
 
-// DATA KHUSUS UNTUK TENSES NOMINAL (TO BE)
-const NOMINAL_COMPLEMENT_MAP = {
-    'i': { complement: 'a student', time: 'right now' },
-    'he': { complement: 'happy', time: 'today' },
-    'she': { complement: 'at the office', time: 'this morning' },
-    'it': { complement: 'interesting', time: 'right now' },
-    'we': { complement: 'tired', time: 'tonight' },
-    'you': { complement: 'smart', time: 'in class' },
-    'they': { complement: 'friends', time: 'now' },
-    'default': { complement: 'ready', time: 'at 8 AM' } 
-};
+let activeTense = null;
 
-// DAFTAR BENTUK NEGATIF YANG DIIZINKAN (LENGKAP dan KONTRAKSI)
-const ALLOWED_NOT_FORMS = {
-    'do': ['do not', "don't"],
-    'does': ['does not', "doesn't"],
-    'did': ['did not', "didn't"],
-    'is': ['is not', "isn't"],
-    'are': ['are not', "aren't"],
-    'am': ['am not', 'am not'], 
-    'have': ['have not', "haven't"],
-    'has': ['has not', "hasn't"],
-    'had': ['had not', "hadn't"],
-    'will': ['will not', "won't"], 
-    'would': ['would not', "wouldn't"],
-    'was': ['was not', "wasn't"],
-    'were': ['were not', "weren't"],
-};
+function startTensesModule() {
+    if (!canPlayModule('tenses')) return; 
 
+    const container = document.getElementById('game-content');
+    
+    const elegantHeader = `
+        <div class="game-overlay-header" style="background: #2196F3; padding: 25px 15px; border-radius: 0 0 30px 30px; text-align:center; position:relative;">
+            <button onclick="closeGame()" style="position:absolute; top:20px; left:15px; background:none; border:none; color:white; font-weight:bold; cursor:pointer;">
+                <i class="fas fa-chevron-left"></i> Kembali
+            </button>
+            <i class="fas fa-brain" style="font-size: 2.2rem; color: #ff9600;"></i>
+            <h2 style="color: white; margin: 0; text-transform: uppercase;">TENSES MASTER</h2>
+        </div>
+    `;
 
-// ====================================================================
-// --- A. HELPER FUNCTIONS (Logika Inti Kata Kerja & Subjek) ---
-// ====================================================================
+    container.innerHTML = elegantHeader + `
+        <div id="tenses-module" style="padding: 15px;">
+            <p style="text-align:center; font-size:0.9rem; color:#666;">Pilih Tense untuk memulai latihan:</p>
+            <div class="tenses-selector" id="tenses-tabs" style="display:flex; gap:8px; overflow-x:auto; padding-bottom:10px; margin-bottom:15px;"></div>
+            
+            <div id="tense-display-card" style="display:none; background:white; padding:20px; border-radius:15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <div class="theory-box">
+                    <h3 id="t-name" style="color:#2196F3; margin:0;"></h3>
+                    <p id="t-usage" style="font-style:italic; color:#666; font-size:0.85rem; margin-bottom:10px;"></p>
+                    
+                    <div style="background:#fff3e0; padding:10px; border-radius:8px; margin-bottom:10px; font-size:0.8rem; border-left:4px solid #ff9800;">
+                        <strong>🕒 Time Signals:</strong> <span id="t-time">Yesterday, Last night, Ago...</span>
+                    </div>
 
-/**
- * Menghasilkan bentuk V-ing (Gerund/Present Participle) yang lebih akurat.
- * @param {string} v1 - Kata kerja V1.
- * @returns {string} - Kata kerja V-ing.
- */
-function getVingForm(v1) {
-    const verb = v1.toLowerCase().trim();
-    if (verb.endsWith('e') && verb.length > 1 && verb !== 'be' && verb !== 'fee' && verb !== 'dye') {
-        return `${verb.slice(0, -1)}ing`;
-    }
-    if (verb.endsWith('ie')) {
-        return `${verb.slice(0, -2)}ying`;
-    }
-    return `${verb}ing`;
+                    <div class="formula-details" style="background:#f8f9fa; padding:12px; border-radius:10px; margin-bottom:15px; border-left:4px solid #2196F3;">
+                        <p style="margin:2px 0; font-size:0.9rem;"><b>Verbal:</b> <span id="f-v" style="font-family:monospace; color:#d32f2f;"></span></p>
+                        <p style="margin:2px 0; font-size:0.9rem;"><b>Nominal:</b> <span id="f-n" style="font-family:monospace; color:#d32f2f;"></span></p>
+                    </div>
+                </div>
+
+                <div class="sandbox-box" style="border-top:2px dashed #eee; padding-top:15px;">
+                    <h4 style="margin:0 0 10px 0;"><i class="fas fa-flask"></i> Sandbox: 3 Bentuk Kalimat</h4>
+                    <input type="text" id="in-pos" placeholder="Tulis kalimat Positif (+)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; margin-bottom:8px;">
+                    <input type="text" id="in-neg" placeholder="Tulis kalimat Negatif (-)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; margin-bottom:8px;">
+                    <input type="text" id="in-int" placeholder="Tulis kalimat Tanya (?)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; margin-bottom:12px;">
+                    
+                    <button class="btn-upgrade btn-premium" style="width:100%;" onclick="validateMasterSandbox()">CEK SEMUA STRUKTUR</button>
+                    <div id="sandbox-res" style="margin-top:12px; font-size:0.9rem; line-height:1.4;"></div>
+                </div>
+            </div>
+
+            <div class="verb-checker-box" style="margin-top:20px; background:#fff8e1; padding:15px; border-radius:15px; border:1px solid #ffe082;">
+                <h4 style="margin:0 0 10px 0;"><i class="fas fa-search"></i> Verb Checker (V1-V2-V3)</h4>
+                <input type="text" id="verb-check-input" oninput="liveVerbCheck()" placeholder="Cek kata kerja (ex: eat, buy)..." 
+                       style="width:100%; padding:10px; border-radius:8px; border:1px solid #ffcc80;">
+                <div id="verb-check-res" style="margin-top:10px; font-weight:bold; color:#f57c00;"></div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('game-overlay').style.display = 'flex';
+    renderTenseTabs();
 }
 
-/**
- * Memeriksa apakah subjek adalah Orang Ketiga Tunggal (Third Singular).
- * @param {string} subject - Subjek kalimat.
- * @returns {boolean}
- */
-function isThirdSingular(subject) {
-    const s = subject.toLowerCase().trim();
-    const tsPronouns = PRONOUNS.thirdSingular.map(p => p.toLowerCase());
-    if (tsPronouns.includes(s)) {
-        return true;
+function renderTenseTabs() {
+    const tabs = document.getElementById('tenses-tabs');
+    // Jika elemen tabs tidak ditemukan di HTML, hentikan fungsi agar tidak error
+    if (!tabs) {
+        console.warn("Elemen 'tenses-tabs' tidak ditemukan di halaman ini.");
+        return;
     }
-    const knownPluralsAndFirstSecond = [
-        ...PRONOUNS.firstPlural, 
-        ...PRONOUNS.thirdPlural, 
-        PRONOUNS.firstSingular, 
-        PRONOUNS.secondSingular
-    ].map(p => p.toLowerCase());
 
-    if (!knownPluralsAndFirstSecond.includes(s) && s.length > 0) {
-        if (!s.includes(' and ') && !s.endsWith('s')) {
-            return true;
+    tabs.innerHTML = "";
+    
+    // 1. Ambil level saat ini (memastikan formatnya angka)
+    let currentLvlNum = window.userState.currentLevel;
+    if (typeof currentLvlNum === 'string') {
+        currentLvlNum = parseInt(currentLvlNum.replace('LV', '')) || 1;
+    }
+
+    // 2. Kumpulkan tenses yang tersedia hingga level saat ini
+    let available = [];
+    for (let i = 1; i <= currentLvlNum; i++) {
+        const key = `level${i}`;
+        if (typeof tensesData !== 'undefined' && tensesData[key]) {
+            available = [...available, ...tensesData[key]];
         }
     }
-    return false;
-}
 
-/**
- * Memeriksa apakah tensesId adalah tipe Nominal (Tenses Be)
- * @param {string} tensesId 
- * @returns {boolean}
- */
-function isNominalTense(tensesId) {
-    return tensesId === 'simple_present_nominal' || tensesId === 'simple_past_nominal';
-}
-
-/**
- * Mengambil bentuk V1, V2, V3, dan V-ing dari kata kerja.
- * @param {string} v1 - Kata kerja bentuk dasar (V1).
- * @returns {{ v1: string, v2: string, v3: string, v_ing: string }}
- */
-function getVerbForms(v1) {
-    const verb = v1.toLowerCase().trim();
-    if (!verb) return { v1: '', v2: '', v3: '', v_ing: '' };
-
-    const irregularForms = IRREGULAR_VERBS[verb];
-    const v_ing = getVingForm(verb);
-
-    if (irregularForms) {
-        return { 
-            v1: verb, 
-            v2: irregularForms.v2, 
-            v3: irregularForms.v3, 
-            v_ing: v_ing 
+    // 3. Render tombol ke dalam tab
+    available.forEach(tense => {
+        const btn = document.createElement('button');
+        btn.innerText = tense.name;
+        btn.className = "tense-btn"; // Sesuai dengan CSS Anda
+        
+        // Logika klik tombol
+        btn.onclick = () => {
+            console.log("Memulai latihan untuk:", tense.name);
+            // Pastikan fungsi startQuiz didefinisikan di file ini atau main.js
+            if (typeof startQuiz === 'function') {
+                startQuiz(tense.id);
+            } else if (typeof startTenseQuiz === 'function') {
+                startTenseQuiz(tense.id);
+            } else {
+                console.error("Fungsi quiz belum didefinisikan.");
+                alert("Fungsi mulai kuis belum siap.");
+            }
         };
+        
+        tabs.appendChild(btn);
+    });
+} 
+
+function showLevelInfo() {
+    if (typeof curriculumMetadata !== 'undefined' && window.userState) {
+        const metadata = curriculumMetadata[window.userState.currentLevel];
+        if (metadata) {
+            console.log("Welcome to level: " + metadata.title);
+        }
+    }
+}
+
+// Inisialisasi saat script dimuat (Opsional, tergantung alur main.js Anda)
+// document.addEventListener('DOMContentLoaded', renderTenseTabs);
+
+// LOGIKA VALIDASI 3 KALIMAT
+function validateMasterSandbox() {
+    const pos = document.getElementById('in-pos').value.trim();
+    const neg = document.getElementById('in-neg').value.trim();
+    const int = document.getElementById('in-int').value.trim();
+    const res = document.getElementById('sandbox-res');
+    
+    if(!activeTense) return alert("Pilih tense terlebih dahulu!");
+    if(!pos || !neg || !int) {
+        res.innerHTML = "<span style='color:#c62828'>⚠️ Lengkapi ketiga bentuk kalimat!</span>";
+        return;
+    }
+
+    let results = { pos: null, neg: null, int: null };
+
+    // Jalankan verifikasi sesuai Tense aktif
+    if(activeTense.id === 's_present') {
+        results.pos = verifyPresent(pos, 'positive');
+        results.neg = verifyPresent(neg, 'negative');
+        results.int = verifyPresent(int, 'interrogative');
+    } else if(activeTense.id === 's_past') {
+        results.pos = verifyPast(pos, 'positive');
+        results.neg = verifyPast(neg, 'negative');
+        results.int = verifyPast(int, 'interrogative');
+    } else if(activeTense.id === 's_future') {
+        results.pos = verifyFuture(pos, 'positive');
+        results.neg = verifyFuture(neg, 'negative');
+        results.int = verifyFuture(int, 'interrogative');
+    }
+
+    // Tampilkan Hasil
+    if(results.pos.valid && results.neg.valid && results.int.valid) {
+        res.innerHTML = "<div style='background:#e8f5e9; padding:10px; border-radius:8px; color:green;'>✔️ <b>Perfect!</b> Struktur benar. +10 XP</div>";
+        
+        // Simpan ke State (data.js)
+        window.userState.points += 10;
+        window.userState.stats.tenses.doneToday++;
+        window.userState.stats.tenses.totalDone++;
+        
+        if (typeof saveUserData === 'function') saveUserData();
+        if (typeof updateUI === 'function') updateUI();
+        if (typeof playSuccessSound === 'function') playSuccessSound();
+
+        // Bersihkan input
+        document.getElementById('in-pos').value = "";
+        document.getElementById('in-neg').value = "";
+        document.getElementById('in-int').value = "";
     } else {
-        let v2v3;
-        if (verb.endsWith('e')) {
-            v2v3 = `${verb}d`;
-        } else if (verb.endsWith('y') && !/[aeiou]y/i.test(verb)) {
-            v2v3 = `${verb.slice(0, -1)}ied`;
-        } else {
-            v2v3 = `${verb}ed`;
+        let errors = [];
+        if(!results.pos.valid) errors.push("➕ " + results.pos.error);
+        if(!results.neg.valid) errors.push("➖ " + results.neg.error);
+        if(!results.int.valid) errors.push("❓ " + results.int.error);
+        res.innerHTML = `<div style='background:#fff3e0; padding:10px; border-radius:8px; color:#d84315;'><b>Koreksi:</b><br>${errors.join('<br>')}</div>`;
+    }
+}        
+        
+// ==========================================
+// MESIN VERIFIKASI TENSES (LEVEL 1)
+// ==========================================
+/**
+ * LINGUAQUEST - Tenses Engine Level 1 (Full Rules)
+ * Mendukung: I, You, We, They, He, She, It, Name
+ */
+
+// --- HELPER: Deteksi Tipe Subjek ---
+function getSubjectType(subject) {
+    const s = subject.toLowerCase();
+    if (['he', 'she', 'it'].includes(s)) return 'singular';
+    if (['i', 'you', 'we', 'they'].includes(s)) return 'plural';
+    return 'name'; // Asumsi nama tunggal
+}
+
+// --- 1. VERIFIKASI SIMPLE PRESENT ---
+function verifyPresent(text, type) {
+    const words = text.toLowerCase().replace(/[.!?]/g, '').trim().split(/\s+/);
+    const subject = words[0];
+    const sType = getSubjectType(subject);
+
+    // --- TAMBAHAN: VALIDASI KOSAKATA ---
+    // Kita cek apakah kata kerja/benda yang dimasukkan user ada di kamus level ini
+    for (let i = 1; i < words.length; i++) {
+        const wordToCheck = words[i];
+        // Abaikan kata bantu umum (grammar) agar tidak salah deteksi
+        const grammarWords = ['am', 'is', 'are', 'do', 'does', 'not', 'don\'t', 'doesn\'t', 'a', 'the', 'an'];
+        if (!grammarWords.includes(wordToCheck)) {
+            if (!isValidEnglishWord(wordToCheck)) {
+                return { 
+                    valid: false, 
+                    error: `Kata '${wordToCheck}' tidak ada dalam daftar kosakata ${window.gameState.currentLevel}.` 
+                };
+            }
         }
-        return { 
-            v1: verb, 
-            v2: v2v3, 
-            v3: v2v3, 
-            v_ing: v_ing
-        };
+    }
+
+    if (type === 'positive') {
+        const isNominal = words.some(w => ['am', 'is', 'are'].includes(w));
+        if (isNominal) return { valid: true };
+        
+        const verb = words[1];
+        if ((sType === 'singular' || sType === 'name') && verb && !verb.endsWith('s') && !verb.endsWith('es')) {
+            return { valid: false, error: `Subjek '${subject}' butuh V1+s/es (contoh: ${verb}s).` };
+        }
+        return { valid: words.length >= 2, error: "Gunakan pola S + V1." };
+    }
+
+    if (type === 'negative') {
+        if (sType === 'singular' || sType === 'name') {
+            const hasDoesNot = text.includes("doesn't") || text.includes("does not") || text.includes("is not") || text.includes("isn't");
+            return hasDoesNot ? { valid: true } : { valid: false, error: `Gunakan 'doesn't' atau 'is not' untuk '${subject}'.` };
+        } else {
+            const hasDoNot = text.includes("don't") || text.includes("do not") || text.includes("am not") || text.includes("are not") || text.includes("aren't");
+            return hasDoNot ? { valid: true } : { valid: false, error: `Gunakan 'don't' atau 'am/are not' untuk '${subject}'.` };
+        }
+    }
+
+    if (type === 'interrogative') {
+        const first = words[0];
+        if (sType === 'singular' || sType === 'name') {
+            return ['does', 'is'].includes(first) ? { valid: true } : { valid: false, error: "Awali dengan 'Does' atau 'Is'." };
+        }
+        return ['do', 'am', 'are'].includes(first) ? { valid: true } : { valid: false, error: "Awali dengan 'Do', 'Am', atau 'Are'." };
     }
 }
 
-/**
- * Mengambil kata kerja bantu (Auxiliary) yang tepat berdasarkan Tenses dan Subjek.
- * @param {string} tensesId - ID tenses.
- * @param {string} subject - Subjek kalimat.
- * @returns {object}
- */
-function getAuxiliary(tensesId, subject) {
-    const isTS = isThirdSingular(subject); 
-    const s = subject.toLowerCase().trim();
+// --- 2. VERIFIKASI SIMPLE PAST ---
+function verifyPast(text, type) {
+    const words = text.toLowerCase().replace(/[.!?]/g, '').split(' ');
+    const subject = words[0];
+    const sType = getSubjectType(subject);
+    const irr = window.IRREGULAR_VERBS || {};
+    const allV2 = Object.values(irr).map(v => v.v2.toLowerCase());
 
-    switch (tensesId) {
-        case 'simple_present':
-        case 'simple_present_nominal': 
-            return { aux_do: isTS ? 'does' : 'do', aux_be: (s === 'i' ? 'am' : (isTS ? 'is' : 'are')) };
-        case 'present_continuous':
-        case 'simple_future_goingto':
-            if (s === 'i') return { aux_be: 'am' };
-            if (isTS) return { aux_be: 'is' };
-            return { aux_be: 'are' };
-        case 'present_perfect':
-        case 'present_perfect_continuous':
-            return { aux_have: isTS ? 'has' : 'have' };
-        case 'past_continuous':
-        case 'simple_past_nominal': 
-            if (s === 'i' || isTS) return { aux_be: 'was' };
-            return { aux_be: 'were' };
-        case 'simple_past':
-            return { aux_did: 'did' };
-        case 'past_perfect':
-        case 'past_perfect_continuous':
-            return { aux_had: 'had' };
-        case 'simple_future':
-        case 'future_continuous':
-        case 'future_perfect':
-        case 'future_perfect_continuous':
-        case 'past_future_tense':
-        case 'past_future_continuous':
-        case 'past_future_perfect':
-        case 'past_future_perfect_continuous':
-            return { aux_will: 'will', aux_would: 'would' };
-        default:
-            return {};
+    if (type === 'positive') {
+        const hasV2 = words.some(w => allV2.includes(w) || w.endsWith('ed'));
+        const hasWas = words.includes('was');
+        const hasWere = words.includes('were');
+        
+        if ((subject === 'i' || sType === 'singular' || sType === 'name') && words.includes('were')) {
+            return { valid: false, error: `Gunakan 'was', bukan 'were' untuk '${subject}'.` };
+        }
+        return (hasV2 || hasWas || hasWere) ? { valid: true } : { valid: false, error: "Gunakan V2 atau Was/Were." };
+    }
+
+    if (type === 'negative') {
+        const hasDidNot = text.includes("didn't") || text.includes("did not");
+        const hasWasNot = text.includes("wasn't") || text.includes("was not") || text.includes("weren't") || text.includes("were not");
+        return hasDidNot || hasWasNot ? { valid: true } : { valid: false, error: "Gunakan didn't atau was/were not." };
+    }
+
+    if (type === 'interrogative') {
+        return ['did', 'was', 'were'].includes(words[0]) ? { valid: true } : { valid: false, error: "Awali dengan Did/Was/Were." };
     }
 }
 
-/**
- * Mengambil V1-s/es yang benar untuk Simple Present Tense (Positive) Third Singular.
- * @param {string} V1 - Kata kerja bentuk dasar.
- * @returns {string} - V1-s/es yang benar.
- */
-export function getV1sForm(V1) {
-    // 1. Pengecekan Kritis: Tangani jika V1 undefined, null, atau bukan string
-    if (!V1 || typeof V1 !== 'string' || V1.trim().length === 0) {
-        return '';
+// --- 3. VERIFIKASI SIMPLE FUTURE ---
+function verifyFuture(text, type) {
+    const cleanText = text.toLowerCase();
+    const words = cleanText.replace(/[.!?]/g, '').split(' ');
+
+    if (type === 'positive') {
+        return (words.includes('will') || cleanText.includes('going to')) ? { valid: true } : { valid: false, error: "Gunakan 'will' atau 'be going to'." };
     }
 
-    // Normalisasi: Ubah ke huruf kecil untuk pengecekan konsisten
-    let verb = V1.toLowerCase();
-    let requiredVForm;
+    if (type === 'negative') {
+        return (cleanText.includes("won't") || cleanText.includes("will not") || cleanText.includes("not going to")) ? { valid: true } : { valid: false, error: "Gunakan 'won't' atau 'not going to'." };
+    }
+
+    if (type === 'interrogative') {
+        return ['will', 'am', 'is', 'are'].includes(words[0]) ? { valid: true } : { valid: false, error: "Awali dengan Will atau Am/Is/Are." };
+    }
+}
+
+// LIVE VERB CHECKER
+function liveVerbCheck() {
+    const val = document.getElementById('verb-check-input').value.toLowerCase().trim();
+    const res = document.getElementById('verb-check-res');
+    if(!val) { res.innerHTML = ""; return; }
+
+    const irr = window.IRREGULAR_VERBS || {};
     
-    // 2. Penanganan Pengecualian 'be' (to be)
-    if (verb === 'be') {
-        return 'is'; 
-    }
-
-    // 3. Logika penambahan ES/S (V1 yang direvisi)
-    if (verb.endsWith('s') || verb.endsWith('sh') || verb.endsWith('ch') || verb.endsWith('x') || verb.endsWith('o')) {
-        // Contoh: pass -> passes, wash -> washes, teach -> teaches
-        requiredVForm = `${V1}es`; // Gunakan V1 asli (dengan case) untuk output
-    } else if (verb.endsWith('y') && !/[aeiou]y/i.test(V1)) {
-        // Contoh: study -> studies (huruf sebelum 'y' adalah konsonan)
-        requiredVForm = `${V1.slice(0, -1)}ies`;
+    if(irr[val]) {
+        res.innerHTML = `<span style="color: #2196F3;">Irregular:</span> ${val} → ${irr[val].v2} → ${irr[val].v3}`;
     } else {
-        // Contoh: eat -> eats, run -> runs
-        requiredVForm = `${V1}s`;
-    }
-    
-    return requiredVForm;
-}
-
-/**
- * Menghasilkan kalimat acuan (Positive, Negative, atau Interrogative) yang benar.
- */
-export function generateReferenceSentence(tensesId, subject, verbForms, aux, object, time, sentenceType) {
-    const { v1: V1, v2: V2, v3: V3, v_ing: V_ING } = verbForms;
-    const isTS = isThirdSingular(subject);
-    let result = '';
-    const s = subject.toLowerCase().trim();
-
-    // === START: KHUSUS NOMINAL TENSES (TENSES BE) ===
-    const isNominal = isNominalTense(tensesId);
-    if (isNominal) {
-        const complementData = NOMINAL_COMPLEMENT_MAP[s] || NOMINAL_COMPLEMENT_MAP.default;
-        const beForm = aux.aux_be; 
-        const complement = complementData.complement;
-        let timeClauseNominal = complementData?.time || '';
-        
-        if (tensesId === 'simple_past_nominal') {
-            timeClauseNominal = 'yesterday'; 
-        }
-
-        if (sentenceType === 'positive') result = `${subject} ${beForm} ${complement} ${timeClauseNominal}.`;
-        if (sentenceType === 'negative') result = `${subject} ${beForm} NOT ${complement} ${timeClauseNominal}.`;
-        if (sentenceType === 'interrogative') result = `${beForm} ${subject} ${complement} ${timeClauseNominal}?`;
-        
-        result = result.trim().replace(/\s{2,}/g, ' ');
-        if (result.length > 0) {
-            result = result.charAt(0).toUpperCase() + result.slice(1);
-        }
-        return result; 
-    }
-    // === END: KHUSUS NOMINAL TENSES ===
-
-    let v1s = getV1sForm(V1); 
-
-    // Penentuan Auxiliary yang dibutuhkan
-    let didAux = aux.aux_did || 'did';
-    let doDoesAux = aux.aux_do || (isTS ? 'does' : 'do');
-    let beAux = aux.aux_be;
-    let haveAux = aux.aux_have;
-    let hadAux = aux.aux_had;
-    let willAux = 'will';
-    let wouldAux = 'would';
-    
-    // Keterangan Waktu/Konjungsi Sesuai Tenses
-    let timeClause;
-    switch(tensesId) {
-        case 'simple_present': timeClause = time; break;
-        case 'simple_past': timeClause = 'yesterday'; break;
-        case 'simple_future': timeClause = 'tomorrow'; break;
-        case 'present_continuous': timeClause = 'right now'; break;
-        case 'past_continuous': timeClause = 'when you called'; break;
-        case 'future_continuous': timeClause = 'at this time tomorrow'; break;
-        case 'present_perfect': timeClause = 'already'; break;
-        case 'past_perfect': timeClause = 'before the meeting started'; break;
-        case 'future_perfect': timeClause = 'by next week'; break;
-        case 'present_perfect_continuous': timeClause = 'for three hours'; break;
-        case 'past_perfect_continuous': timeClause = 'when the lights went out'; break;
-        case 'future_perfect_continuous': timeClause = 'by Christmas'; break;
-        case 'simple_future_goingto': timeClause = 'this evening'; break;
-        case 'past_future_tense': timeClause = 'but they couldn\'t'; break;
-        case 'past_future_continuous': timeClause = 'at that time'; break;
-        case 'past_future_perfect': timeClause = 'if they had time'; break;
-        case 'past_future_perfect_continuous': timeClause = 'for two hours'; break;
-        default: timeClause = '';
-    }
-
-    switch (tensesId) {
-        case 'simple_present':
-            if (sentenceType === 'positive') result = `${subject} ${isTS ? v1s : V1} ${object} ${timeClause}.`;
-            if (sentenceType === 'negative') result = `${subject} ${doDoesAux} NOT ${V1} ${object} ${timeClause}.`;
-            if (sentenceType === 'interrogative') result = `${doDoesAux} ${subject} ${V1} ${object} ${timeClause}?`;
-            break;
-        case 'simple_past':
-            if (sentenceType === 'positive') result = `${subject} ${V2} ${object} ${timeClause}.`;
-            if (sentenceType === 'negative') result = `${subject} ${didAux} NOT ${V1} ${object} ${timeClause}.`;
-            if (sentenceType === 'interrogative') result = `${didAux} ${subject} ${V1} ${object} ${timeClause}?`;
-            break;
-        case 'simple_future':
-            if (sentenceType === 'positive') result = `${subject} ${willAux} ${V1} ${object} ${timeClause}.`;
-            if (sentenceType === 'negative') result = `${subject} ${willAux} NOT ${V1} ${object} ${timeClause}.`;
-            if (sentenceType === 'interrogative') result = `${willAux} ${subject} ${V1} ${object} ${timeClause}?`;
-            break;
-        case 'present_continuous':
-            if (sentenceType === 'positive') result = `${subject} ${beAux} ${V_ING} ${object} ${timeClause}.`;
-            if (sentenceType === 'negative') result = `${subject} ${beAux} NOT ${V_ING} ${object} ${timeClause}.`;
-            if (sentenceType === 'interrogative') result = `${beAux} ${subject} ${V_ING} ${object} ${timeClause}?`;
-            break;
-        case 'present_perfect':
-            if (sentenceType === 'positive') result = `${subject} ${haveAux} ${V3} ${object} ${timeClause}.`;
-            if (sentenceType === 'negative') result = `${subject} ${haveAux} NOT ${V3} ${object} yet.`; 
-            if (sentenceType === 'interrogative') result = `${haveAux} ${subject} ${V3} ${object} yet?`;
-            break;
-        case 'past_continuous':
-            if (sentenceType === 'positive') result = `${subject} ${beAux} ${V_ING} ${object} ${timeClause}.`;
-            if (sentenceType === 'negative') result = `${subject} ${beAux} NOT ${V_ING} ${object} ${timeClause}.`;
-            if (sentenceType === 'interrogative') result = `${beAux} ${subject} ${V_ING} ${object} ${timeClause}?`;
-            break;
-        case 'future_continuous':
-            if (sentenceType === 'positive') result = `${subject} ${willAux} be ${V_ING} ${object} ${timeClause}.`;
-            if (sentenceType === 'negative') result = `${subject} ${willAux} NOT be ${V_ING} ${object} ${timeClause}.`;
-            if (sentenceType === 'interrogative') result = `${willAux} ${subject} be ${V_ING} ${object} ${timeClause}?`;
-            break;
-        case 'past_perfect':
-            if (sentenceType === 'positive') result = `${subject} ${hadAux} ${V3} ${object} ${timeClause}.`;
-            if (sentenceType === 'negative') result = `${subject} ${hadAux} NOT ${V3} ${object} ${timeClause}.`;
-            if (sentenceType === 'interrogative') result = `${hadAux} ${subject} ${V3} ${object} ${timeClause}?`;
-            break;
-        case 'future_perfect':
-            if (sentenceType === 'positive') result = `${subject} ${willAux} have ${V3} ${object} ${timeClause}.`;
-            if (sentenceType === 'negative') result = `${subject} ${willAux} NOT have ${V3} ${object} ${timeClause}.`;
-            if (sentenceType === 'interrogative') result = `${willAux} ${subject} have ${V3} ${object} ${timeClause}?`;
-            break;
-        case 'present_perfect_continuous':
-            if (sentenceType === 'positive') result = `${subject} ${haveAux} been ${V_ING} ${object} ${timeClause}.`;
-            if (sentenceType === 'negative') result = `${subject} ${haveAux} NOT been ${V_ING} ${object} ${timeClause}.`;
-            if (sentenceType === 'interrogative') result = `${haveAux} ${subject} been ${V_ING} ${object} ${timeClause}?`;
-            break;
-        case 'past_perfect_continuous':
-            if (sentenceType === 'positive') result = `${subject} ${hadAux} been ${V_ING} ${object} ${timeClause}.`;
-            if (sentenceType === 'negative') result = `${subject} ${hadAux} NOT been ${V_ING} ${object} ${timeClause}.`;
-            if (sentenceType === 'interrogative') result = `${hadAux} ${subject} been ${V_ING} ${object} ${timeClause}?`;
-            break;
-        case 'future_perfect_continuous':
-            if (sentenceType === 'positive') result = `${subject} ${willAux} have been ${V_ING} ${object} ${timeClause}.`;
-            if (sentenceType === 'negative') result = `${subject} ${willAux} NOT have been ${V_ING} ${object} ${timeClause}.`;
-            if (sentenceType === 'interrogative') result = `${willAux} ${subject} have been ${V_ING} ${object} ${timeClause}?`;
-            break;
-        case 'simple_future_goingto':
-            if (sentenceType === 'positive') result = `${subject} ${beAux} going to ${V1} ${object} ${timeClause}.`;
-            if (sentenceType === 'negative') result = `${subject} ${beAux} NOT going to ${V1} ${object} ${timeClause}.`;
-            if (sentenceType === 'interrogative') result = `${beAux} ${subject} going to ${V1} ${object} ${timeClause}?`;
-            break;
-        case 'past_future_tense':
-            if (sentenceType === 'positive') result = `${subject} ${wouldAux} ${V1} ${object} ${timeClause}.`;
-            if (sentenceType === 'negative') result = `${subject} ${wouldAux} NOT ${V1} ${object} if they knew the truth.`; 
-            if (sentenceType === 'interrogative') result = `${wouldAux} ${subject} ${V1} ${object} if you asked?`;
-            break;
-        case 'past_future_continuous':
-            if (sentenceType === 'positive') result = `${subject} ${wouldAux} be ${V_ING} ${object} ${timeClause}.`;
-            if (sentenceType === 'negative') result = `${subject} ${wouldAux} NOT be ${V_ING} ${object} when you called.`;
-            if (sentenceType === 'interrogative') result = `${wouldAux} ${subject} be ${V_ING} ${object} then?`;
-            break;
-        case 'past_future_perfect':
-            if (sentenceType === 'positive') result = `${subject} ${wouldAux} have ${V3} ${object} ${timeClause}.`;
-            if (sentenceType === 'negative') result = `${subject} ${wouldAux} NOT have ${V3} ${object} without help.`;
-            if (sentenceType === 'interrogative') result = `${wouldAux} ${subject} have ${V3} ${object} earlier?`;
-            break;
-        case 'past_future_perfect_continuous':
-            if (sentenceType === 'positive') result = `${subject} ${wouldAux} have been ${V_ING} ${object} ${timeClause}.`;
-            if (sentenceType === 'negative') result = `${subject} ${wouldAux} NOT have been ${V_ING} ${object} by then.`;
-            if (sentenceType === 'interrogative') result = `${wouldAux} ${subject} have been ${V_ING} ${object} all day?`;
-            break;
-        default:
-             result = (sentenceType === 'interrogative') ? 'Tenses tidak terdefinisi?' : 'Tenses tidak terdefinisi.';
-             break;
-    }
-
-    // Final check dan kapitalisasi
-    result = result.trim().replace(/\s{2,}/g, ' ');
-    if (result.length > 0) {
-        result = result.charAt(0).toUpperCase() + result.slice(1);
-    }
-    return result;
-}
-
-
-// ====================================================================
-// --- B. EXPORTED FUNCTIONS (Tampilan & Struktur) ---
-// ====================================================================
-
-function getTensesInfo(tensesId) {
-    return TENSES_DATA.find(t => t.id === tensesId);
-}
-
-/**
- * 🎯 BARU: Mengambil materi detail (fungsi, penggunaan, keterangan waktu) untuk Tenses.
- */
-export function getTensesMaterial(tensesId) {
-    const info = getTensesInfo(tensesId);
-    
-    // Jika data tenses tidak ditemukan, kembalikan objek dengan SEMUA ARRAY KOSONG
-    if (!info) {
-        return {
-            id: null,
-            name: 'Data Tenses Tidak Ditemukan',
-            formula_pos: '', 
-            formula_neg: '',
-            formula_int: '',
-            fungsi: [], // <-- PENTING: Harus Array kosong
-            penggunaan: [], // <-- PENTING: Harus Array kosong
-            keterangan_waktu: [] // <-- PENTING: Harus Array kosong
-        };
-    }
-
-    return {
-        id: info.id,
-        name: info.name,
-        formula_pos: info.formula_pos,
-        formula_neg: info.formula_neg,
-        formula_int: info.formula_int,
-        
-        // PENTING: Tambahkan fallback "|| []" untuk memastikan properti ini adalah Array
-        fungsi: info.fungsi || [], 
-        penggunaan: info.penggunaan || [],
-        keterangan_waktu: info.keterangan_waktu || [] 
-    };
-}
-
-
-function getAllTenses() {
-    return TENSES_DATA; 
-}
-
-function getAllPronouns() {
-    return [
-        PRONOUNS.firstSingular, 
-        PRONOUNS.secondSingular, 
-        ...PRONOUNS.thirdSingular.slice(0, 3), 
-        PRONOUNS.firstPlural, 
-        ...PRONOUNS.thirdPlural.slice(0, 1),
-    ];
-}
-
-function checkIrregularVerb(verbInput) {
-    const verb = verbInput.toLowerCase().trim();
-    
-    if (!verb) {
-        return { message: "Masukkan kata kerja dasar (V1)." };
-    }
-    
-    const forms = getVerbForms(verb); 
-
-    if (forms.v1) {
-        const isIrregular = IRREGULAR_VERBS.hasOwnProperty(verb);
-        let message;
-
-        if (isIrregular) {
-            // Skenario 1: Kata kerja Irregular yang terdaftar di data.js (V2/V3 akurat)
-            message = `Kata kerja <strong>${verbInput}</strong> terdaftar sebagai **IRREGULAR (Tidak Beraturan)**.`;
-        } else {
-            // Skenario 2: Kata kerja tidak terdaftar, maka dianggap Regular.
-            // Ini mencakup: 1. Regular Verb yang benar. 2. Irregular Verb yang sangat langka.
-            message = `Kata kerja <strong>${verbInput}</strong> tidak terdaftar dalam daftar khusus irregular. Hasil di bawah dihasilkan dengan aturan **REGULAR (Beraturan)**.`;
-        }
-
-        return {
-            message: message,
-            v1: forms.v1,
-            v2: forms.v2,
-            v3: forms.v3,
-        };
-    } else {
-        return {
-            message: `Kata kerja <strong>${verbInput}</strong> tidak dapat diolah atau bukan kata kerja dasar.`,
-        };
+        // Logika akhiran -ed sederhana
+        let v23 = val.endsWith('e') ? val + 'd' : (val.endsWith('y') ? val.slice(0,-1) + 'ied' : val + 'ed');
+        res.innerHTML = `<span style="color: #4CAF50;">Regular:</span> ${val} → ${v23} → ${v23}`;
     }
 }
-
-function checkVerbForms(verbInput) {
-    // Fungsi ini hanya memanggil checkIrregularVerb, ini sudah benar.
-    return checkIrregularVerb(verbInput); 
-}
-
-/**
- * Mendapatkan urutan Auxiliary dan V-Form yang diharapkan (Inti dari rumus tenses).
- */
-function getExpectedCoreStructure(tensesId, subject, verbForms, aux) {
-    const { v1: V1, v2: V2, v3: V3, v_ing: V_ING } = verbForms;
-    const isTS = isThirdSingular(subject);
-    let expected = [];
-
-    if (isNominalTense(tensesId)) {
-        return [aux.aux_be];
-    }
-
-    switch (tensesId) {
-        case 'simple_present':
-            if (isTS) expected.push(V1); 
-            else expected.push(V1);
-            break;
-        case 'simple_past':
-            expected.push(V2); 
-            break;
-        case 'simple_future':
-            expected.push('will', V1);
-            break;
-        case 'present_continuous':
-            expected.push(aux.aux_be, V_ING);
-            break;
-        case 'simple_future_goingto':
-            expected.push(aux.aux_be, 'going', 'to', V1);
-            break;
-        case 'present_perfect':
-            expected.push(aux.aux_have, V3);
-            break;
-        case 'past_continuous':
-            expected.push(aux.aux_be, V_ING);
-            break;
-        case 'future_continuous':
-            expected.push('will', 'be', V_ING);
-            break;
-        case 'past_perfect':
-            expected.push(aux.aux_had, V3);
-            break;
-        case 'future_perfect':
-            expected.push('will', 'have', V3);
-            break;
-        case 'present_perfect_continuous':
-            expected.push(aux.aux_have, 'been', V_ING);
-            break;
-        case 'past_perfect_continuous':
-            expected.push(aux.aux_had, 'been', V_ING);
-            break;
-        case 'future_perfect_continuous':
-            expected.push('will', 'have', 'been', V_ING);
-            break;
-        case 'past_future_tense':
-            expected.push('would', V1);
-            break;
-        case 'past_future_continuous':
-            expected.push('would', 'be', V_ING);
-            break;
-        case 'past_future_perfect':
-            expected.push('would', 'have', V3);
-            break;
-        case 'past_future_perfect_continuous':
-            expected.push('would', 'have', 'been', V_ING);
-            break;
-        default:
-            expected = [];
-    }
-
-    return expected.filter(word => word); 
-}
-
-
-/**
- * 🎯 FUNGSI PENILAIAN UTAMA: Mengevaluasi kalimat input pengguna.
- */
-function evaluateUserSentence(tensesId, subject, verbInput, userInput, sentenceType) {
-    const tensesInfo = getTensesInfo(tensesId);
-    if (!tensesInfo) {
-        return { correct: false, message: 'Tenses tidak ditemukan.', correct_sentence: '' };
-    }
-
-    const verbForms = getVerbForms(verbInput);
-    const V1 = verbForms.v1;
-    const { v2: V2, v3: V3, v_ing: V_ING } = verbForms;
-    const isTS = isThirdSingular(subject);
-    const aux = getAuxiliary(tensesId, subject);
-    const doDoesAux = aux.aux_do || (isTS ? 'does' : 'do');
-    const didAux = aux.aux_did || 'did';
-    const isNominal = isNominalTense(tensesId);
-
-    // 1. Buat Kalimat Acuan (Reference)
-    let mapKey = V1 in VERB_OBJECT_MAP ? V1 : 'default';
-    let { object, time } = VERB_OBJECT_MAP[mapKey];
-    
-    if (isNominal) {
-        const s = subject.toLowerCase().trim();
-        const complementData = NOMINAL_COMPLEMENT_MAP[s] || NOMINAL_COMPLEMENT_MAP.default;
-        object = complementData.complement;
-        time = complementData.time; 
-    }
-
-    let referenceSentence = generateReferenceSentence(tensesId, subject, verbForms, aux, object, time, sentenceType);
-    
-    // 2. Normalisasi Input Pengguna
-    const userTrimmed = userInput.trim().replace(/[.,?!]$/g, '').replace(/\s{2,}/g, ' '); 
-    const userWords = userTrimmed.toLowerCase().split(/\s+/).filter(w => w.length > 0);
-    
-    let error_message = `Kalimat Anda salah.`;
-    let errorFound = false;
-
-    // Ambil rumus tenses untuk ditampilkan sebagai hint
-    const formulaKey = (sentenceType === 'positive') ? 'formula_pos' : (sentenceType === 'negative') ? 'formula_neg' : 'formula_int';
-    const expectedFormula = tensesInfo[formulaKey] || tensesInfo.formula_pos;
-    error_message += ` Rumus untuk **${tensesInfo.name} (${sentenceType.toUpperCase()})** adalah: <code>${expectedFormula}</code>.`;
-
-
-    // 3. Penentuan Struktur Inti yang Diharapkan (Untuk Cek Urutan Wajib)
-    let expectedWords = []; 
-    let coreStructure = getExpectedCoreStructure(tensesId, subject, verbForms, aux);
-    
-    // Logika penentuan expectedWords
-    if (sentenceType === 'positive') {
-        if (isNominal) {
-            expectedWords.push(aux.aux_be);
-        } else if (tensesId === 'simple_present') {
-            expectedWords.push(isTS ? getV1sForm(V1) : V1);
-        } else if (tensesId === 'simple_past') {
-            expectedWords.push(V2);
-        } else {
-            expectedWords = coreStructure;
-        }
-    } else if (sentenceType === 'negative') {
-        let firstAux = isNominal ? aux.aux_be : coreStructure[0];
-        
-        if (!isNominal && (tensesId === 'simple_present' || tensesId === 'simple_past')) {
-            firstAux = (tensesId === 'simple_present') ? doDoesAux : didAux;
-            expectedWords.push(firstAux, 'not', V1);
-        } else {
-            expectedWords.push(firstAux, 'not', ...coreStructure.slice(1));
-        }
-    } else if (sentenceType === 'interrogative') {
-        let firstAux = isNominal ? aux.aux_be : coreStructure[0];
-        
-        if (!isNominal && (tensesId === 'simple_present' || tensesId === 'simple_past')) {
-            firstAux = (tensesId === 'simple_present') ? doDoesAux : didAux;
-            expectedWords.push(firstAux, subject.toLowerCase(), V1);
-        } else {
-            expectedWords.push(firstAux, subject.toLowerCase(), ...coreStructure.slice(1));
-        }
-    }
-
-
-    // --- 4. PENGECEKAN KATA PER KATA (SINTAKSIS) ---
-
-    // 4.1. Cek Subjek/Aux Awal (Posisi 0)
-    const expectedStartWord = (sentenceType === 'interrogative') ? 
-        (isNominal ? aux.aux_be : expectedWords[0]) : subject.toLowerCase();
-
-    if (userWords[0] !== expectedStartWord) {
-        error_message += `<br>❌ Kesalahan Struktur Awal: Kalimat harus dimulai dengan **${expectedStartWord.toUpperCase()}** (Subjek atau Auxiliary pembuka).`;
-        errorFound = true;
-    }
-
-    // 4.2. Pengecekan Inti Kalimat (Auxiliary/Verb Form)
-    if (!errorFound) {
-        
-        if (sentenceType === 'positive') {
-            // Cek Kata Kunci Wajib (Aux/V-Form) setelah Subjek (posisi 1)
-            const requiredWord = expectedWords[0];
-            if (userWords[1] !== requiredWord) {
-                // Khusus Simple Present (cek V1 atau V1s)
-                if (tensesId === 'simple_present' && userWords[1] !== V1 && userWords[1] !== getV1sForm(V1)) {
-                    error_message += `<br>❌ Kesalahan Kata Kerja/Auxiliary: Harusnya **${isTS ? getV1sForm(V1).toUpperCase() : V1.toUpperCase()}**.`;
-                    errorFound = true;
-                // Khusus Simple Past (cek V2)
-                } else if (tensesId === 'simple_past' && userWords[1] !== V2) {
-                    error_message += `<br>❌ Kesalahan Kata Kerja/Auxiliary: Harusnya **${V2.toUpperCase()}**.`;
-                    errorFound = true;
-                // Kasus umum (Aux, V-ing, V3, atau To Be)
-                } else if (!['simple_present', 'simple_past'].includes(tensesId) && userWords[1] !== requiredWord) {
-                    error_message += `<br>❌ Kesalahan Kata Kerja/Auxiliary: Harusnya **${requiredWord.toUpperCase()}**.`;
-                    errorFound = true;
-                }
-            }
-            
-        } else if (sentenceType === 'negative') {
-            const expectedAux1 = isNominal ? aux.aux_be : (tensesId === 'simple_present' ? doDoesAux : (tensesId === 'simple_past' ? didAux : aux.aux_be || aux.aux_have || aux.aux_had || 'will' || 'would'));
-            
-            // 4.2.1. Cek Aux + NOT (fleksibel: full form atau contraction)
-            const requiredNotForms = ALLOWED_NOT_FORMS[expectedAux1] || [`${expectedAux1} not`]; 
-            
-            let isFullForm = false;
-            let isContractedForm = false;
-            
-            // Cek Bentuk Penuh (Subjek + Aux + NOT)
-            if (userWords.length > 2 && userWords[1] === expectedAux1 && userWords[2] === 'not') {
-                isFullForm = true;
-            }
-
-            // Cek Bentuk Kontraksi (Subjek + Contraction)
-            if (!isFullForm) {
-                const userContraction = userWords[1]; 
-                
-                // Cek apakah input pengguna (misal: "dont") sesuai dengan bentuk yang diizinkan (misal: "don't" atau "do not")
-                if (requiredNotForms.includes(userContraction) || 
-                    requiredNotForms.includes(userContraction.replace(/'/g, ''))) {
-                    isContractedForm = true;
-                }
-            }
-            
-            if (!isFullForm && !isContractedForm) {
-                const formsHint = requiredNotForms.map(f => `**${f.toUpperCase()}**`).join(' ATAU ');
-                error_message += `<br>❌ Kesalahan Negasi: Setelah subjek harus diikuti oleh Auxiliary + NOT. Harusnya ${formsHint}.`;
-                errorFound = true;
-            }
-
-            // 4.2.2. Cek V-Form/Kata Kunci Utama (Hanya jika bukan Nominal)
-            if (!errorFound && !isNominal) {
-                const startIndexOfVForm = isContractedForm ? 2 : 3; 
-                const remainingWords = userWords.slice(startIndexOfVForm);
-                
-                // V-form utama untuk tenses verbal negatif selalu V1, V3, atau V-ing
-                let finalVForm = (tensesId === 'simple_present' || tensesId === 'simple_past' || tensesId.includes('future')) ? V1 : 
-                                    (tensesId.includes('perfect') && !tensesId.includes('continuous')) ? V3 : V_ING; 
-                
-                // Khusus Perfect Continuous, kita harus cek 'been' dan V-ing
-                if (tensesId.includes('perfect_continuous')) {
-                    if (!remainingWords.includes('been') || !remainingWords.includes(V_ING)) {
-                        error_message += `<br>❌ Kesalahan Struktur: Harusnya ada **BEEN** dan bentuk **${V_ING.toUpperCase()}** (V-ing).`;
-                        errorFound = true;
-                    }
-                } else if (!remainingWords.includes(finalVForm)) {
-                    let vHint = (finalVForm === V1) ? 'V1' : (finalVForm === V3) ? 'V3' : 'V-ing';
-                    error_message += `<br>❌ Kesalahan Bentuk Kata Kerja: Gunakan bentuk **${finalVForm.toUpperCase()}** (${vHint}).`;
-                    errorFound = true;
-                }
-            }
-
-        } else if (sentenceType === 'interrogative') {
-            // Cek Subjek (Posisi 1)
-            if (userWords[1] !== subject.toLowerCase()) {
-                error_message += `<br>❌ Kesalahan Subjek: Setelah Auxiliary (**${expectedStartWord.toUpperCase()}**), harus diikuti subjek (**${subject}**).`;
-                errorFound = true;
-            }
-
-            // Cek V-Form/Kata Kunci Utama (Posisi 2 ke atas, hanya jika bukan Nominal)
-            if (!errorFound && !isNominal) {
-                const remainingWords = userWords.slice(2); 
-                
-                let finalVForm = V1;
-                if (tensesId.includes('continuous') && !tensesId.includes('perfect')) finalVForm = V_ING;
-                if (tensesId.includes('perfect') && !tensesId.includes('continuous')) finalVForm = V3;
-                if (tensesId.includes('perfect_continuous')) finalVForm = V_ING; 
-                
-                // Khusus Perfect Continuous, cek 'have/had' + 'been' + V-ing
-                if (tensesId.includes('perfect_continuous')) {
-                    if (!remainingWords.includes('been') || !remainingWords.includes(V_ING)) {
-                        error_message += `<br>❌ Kesalahan Struktur: Harusnya ada **BEEN** dan bentuk **${V_ING.toUpperCase()}** (V-ing) setelah subjek.`;
-                        errorFound = true;
-                    }
-                } else if (!remainingWords.includes(finalVForm)) {
-                    let vHint = (finalVForm === V1) ? 'V1' : (finalVForm === V3) ? 'V3' : 'V-ing';
-                    error_message += `<br>❌ Kesalahan Bentuk Kata Kerja: Gunakan bentuk **${finalVForm.toUpperCase()}** (${vHint}).`;
-                    errorFound = true;
-                }
-            }
-        }
-    }
-
-
-    // 5. Kesimpulan Penilaian
-    if (!errorFound) {
-        let finalFeedback = {
-            correct: true,
-            message: `🎉 Luar biasa! Sintaksis ${sentenceType.toUpperCase()} Anda **benar**!`,
-            correct_sentence: referenceSentence,
-            formula: expectedFormula
-        };
-        // Cek Tanda Baca Akhir (Saran)
-        const expectedPunctuation = (sentenceType === 'interrogative') ? '?' : '.';
-        if (!userInput.trim().endsWith(expectedPunctuation)) {
-            finalFeedback.message += `<br>⚠️ Saran: Kalimat seharusnya diakhiri dengan tanda **${expectedPunctuation}** (Kesalahan Minor).`;
-        }
-        
-        return finalFeedback;
-    } else {
-        return {
-            correct: false,
-            message: error_message, 
-            correct_sentence: referenceSentence,
-            formula: expectedFormula
-        };
-    }
-}
-
-/**
- * Fungsi untuk generate contoh kalimat untuk Tenses Transformer.
- */
-function generateTensesExamples(tensesId, subject, verbInput) {
-    const tensesInfo = getTensesInfo(tensesId);
-    if (!tensesInfo) return {};
-
-    const verbForms = getVerbForms(verbInput);
-    const aux = getAuxiliary(tensesId, subject);
-    const V1 = verbForms.v1;
-    let mapKey = V1 in VERB_OBJECT_MAP ? V1 : 'default';
-    let { object, time } = VERB_OBJECT_MAP[mapKey];
-
-    if (isNominalTense(tensesId)) {
-        const s = subject.toLowerCase().trim();
-        const complementData = NOMINAL_COMPLEMENT_MAP[s] || NOMINAL_COMPLEMENT_MAP.default;
-        object = complementData.complement;
-        time = complementData.time; 
-    }
-
-    const positive = generateReferenceSentence(tensesId, subject, verbForms, aux, object, time, 'positive');
-    const negative = generateReferenceSentence(tensesId, subject, verbForms, aux, object, time, 'negative');
-    const interrogative = generateReferenceSentence(tensesId, subject, verbForms, aux, object, time, 'interrogative');
-
-    return {
-        positive,
-        negative,
-        interrogative,
-        formula: tensesInfo
-    };
-}
-
-
-// ====================================================================
-// --- C. EXPORT MODUL FINAL ---
-// ====================================================================
-
-export { 
-    getTensesInfo, 
-    getAllTenses, 
-    getAllPronouns, 
-    checkVerbForms,
-    evaluateUserSentence,
-    generateTensesExamples,
-};

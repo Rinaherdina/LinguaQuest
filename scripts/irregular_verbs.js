@@ -4,7 +4,7 @@
 // ====================================================================
 
 // Format data: [V1 (Base), V2 (Past Simple), V3 (Past Participle)]
-export const IRREGULAR_VERBS = {
+window.IRREGULAR_VERBS = {
     // A
     'abide': { v2: 'abode/abided', v3: 'abode/abided' },
     'arise': { v2: 'arose', v3: 'arisen' },

@@ -1,10 +1,10 @@
 // scripts/dictation_L1_sentences.js
 
-export const DICTATION_L1_SENTENCES = [
+const DICTATION_L1_SENTENCES = [
    [
   ["d_L1_001","A1_ID","m1_simple_pres","Simple Present","He teaches math at the local high school.","Dia mengajar matematika di sekolah menengah setempat."  ],
   ["d_L1_002","A1_ID","m1_simple_pres","Simple Present","I often forget where I put my glasses.","Saya sering lupa di mana saya meletakkan kacamata saya."  ],
-  ["d_L1_003","A1_ID","m1_simple_pres","Simple Present","She never eats meat because she is vegetarian.","Dia tidak pernah makan daging karena dia vegetarian."  ],
+  ["d__L1_003","A1_ID","m1_simple_pres","Simple Present","She never eats meat because she is vegetarian.","Dia tidak pernah makan daging karena dia vegetarian."  ],
   ["d_L1_004","A1_ID","m1_simple_pres","Simple Present","The sun rises in the east every morning.","Matahari terbit di timur setiap pagi."  ],
   ["d_L1_005","A1_ID","m1_simple_pres","Simple Present","My mother cooks rice every afternoon.","Ibu saya memasak nasi setiap sore."  ],
   ["d_L1_006","A1_ID","m1_simple_pres","Simple Present","They study English three times a week.","Mereka belajar Bahasa Inggris tiga kali seminggu."  ],

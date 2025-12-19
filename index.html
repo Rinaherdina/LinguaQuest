@@ -1,124 +1,231 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="LinguaQuest: English Master Suite - Pelajari Tenses, Idiom, Dikte, dan Terjemahan."> 
-    <title>LinguaQuest - English Master Suite</title>
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LinguaQuest - 16 Tenses Mastery</title>
     <link rel="stylesheet" href="styles/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body>
 
-    <header id="app-header">
-        <div class="logo-container">
-            <span class="logo-icon">🧭</span>
-            <h1>LinguaQuest</h1>
-        </div>
-        
-        <div class="user-stats">
-            <span id="bintang-ilmu-display" class="stat-item">
-                <i class="fas fa-star text-warning"></i> 
-                <span id="score-value">0</span>
-            </span>
-            <button id="premium-button" onclick="window.navigateToSubscription()" class="premium-btn">
-                <i class="fas fa-crown"></i> Premium
+<div id="archive-modal" class="overlay" style="display: none; background: rgba(0,0,0,0.9); z-index: 10000;">
+    <div class="theory-card" style="width: 90%; max-width: 500px; max-height: 80vh; display: flex; flex-direction: column; position: relative;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="margin: 0;"><i class="fas fa-book-bookmark"></i> Album Idiom</h3>
+            <button onclick="document.getElementById('archive-modal').style.display='none'" style="background:none; border:none; font-size:1.2rem; cursor:pointer;">
+                <i class="fas fa-times"></i>
             </button>
         </div>
-    </header>
-
-    <main id="app-content">
-        <div id="loading-screen">
-            <h2>Memuat Konten...</h2>
-        </div>
         
-        <div id="dictation-challenge-container" class="challenge-container hidden">
-            <div class="header-section">
-                <button id="back-to-dashboard" class="back-button" onclick="window.loadView('home')">← Dashboard</button>
-                <div class="lives-indicator">
-                    <span id="dictation-lives-display" class="live-count">❤️ 5</span>
-                </div>
+        <input type="text" id="idiom-search" placeholder="Cari idiom..." onkeyup="filterArchive()" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px; font-size: 1rem;">
+
+        <div id="full-archive-list" style="overflow-y: auto; flex: 1; display: grid; grid-template-columns: 1fr; gap: 10px; padding-right: 5px;">
             </div>
+    </div>
+</div>
 
-            <div class="challenge-card">
-                <h2 id="dictation-level-title" class="challenge-title">Dictation Challenge: Level A1</h2>
-                <p id="dictation-module-info" class="module-info">Simple Present Tense</p>
+<body>
 
-                <div class="audio-section">
-                    <button id="play-audio-button" class="audio-button">
-                        <i class="fas fa-play"></i> Dengarkan Kalimat
-                    </button>
-                    <button id="play-audio-slow-button" class="audio-button secondary">
-                        <i class="fas fa-volume-down"></i> Ulangi (Pelan)
-                    </button>
+    <header class="app-header">
+    <div class="header-content">
+        <i class="fas fa-graduation-cap"></i>
+        <h1>LINGUAQUEST</h1>
+    </div>
+</header>
+
+    <section class="stats-bar">
+        <div class="stat-item"><i class="fas fa-heart"></i> <span id="life-count">5</span></div>
+        <div class="stat-item"><i class="fas fa-gem"></i> <span id="gem-count">20</span></div>
+        <div class="stat-item"><i class="fas fa-star"></i> <span id="point-count">0</span></div>
+        <div class="stat-item" style="color: #ff9600;"><i class="fas fa-fire"></i> <span id="streak-count">0</span></div>
+    </section>
+
+    <main id="app-container">
+    <section id="home-view">
+    <div class="module-card vocab-theme" onclick="openVocabPage()">
+        <div class="module-icon"><i class="fas fa-spell-check"></i></div>
+        <div class="module-info">
+            <h3>Daily Vocab</h3>
+            <p id="vocab-preview">Pelajari kata-kata kunci level ini</p>
+        </div>
+        <i class="fas fa-chevron-right arrow-icon"></i>
+    </div>
+
+    <div class="module-card idiom-special" onclick="openIdiomPage()"> 
+        <div class="module-icon"><i class="fas fa-lightbulb"></i></div>
+        <div class="module-info">
+            <h3>Daily Idiom</h3>
+            <p id="idiom-text">Ketuk untuk melihat ungkapan hari ini</p>
+        </div>
+        <i class="fas fa-chevron-right arrow-icon"></i>
+    </div>
+
+    </section>
+
+        <div class="module-card sb-theme" onclick="startSentenceBuilder()">
+            <div class="module-icon"><i class="fas fa-puzzle-piece"></i></div>
+            <div class="module-info">
+                <h3>Sentence Builder</h3>
+                <p>Susun kalimat dari bank soal</p>
+            </div>
+            <i class="fas fa-chevron-right arrow-icon"></i>
+        </div>
+
+        <div class="arena-section">
+            <h2 class="section-title">The Arena</h2>
+            <div class="level-pathway" id="arena-map">
+                <div class="level-node active" onclick="switchTab('level-menu')">
+                    <div class="node-circle">1</div>
+                    <span class="level-label">THE NEWBIE</span>
                 </div>
-
-                <div class="input-section">
-                    <textarea id="dictation-input" class="dictation-textarea" placeholder="Tulis kalimat di sini..." rows="4"></textarea>
-                    <div id="feedback-message" class="feedback-text"></div>
+                <div class="level-node locked" onclick="showPremiumWall('Level 2 Terkunci')">
+                    <div class="node-circle"><i class="fas fa-lock"></i></div>
+                    <span class="level-label">THE VOYAGER</span>
                 </div>
-
-                <div class="actions-section">
-                    <button id="check-answer-button" class="action-button primary">Cek Jawaban</button>
-                    <button id="show-hint-button" class="action-button secondary">Lihat Hint</button>
-                </div>
-
-                <div id="hint-display" class="hint-display hidden">
-                    </div>
-
-                <div id="correct-answer-display" class="correct-answer-display hidden">
-                    <strong>Jawaban Benar:</strong> <span id="correct-text"></span>
-                </div>
+                <div class="level-node locked"><div class="node-circle"><i class="fas fa-lock"></i></div><span class="level-label">LEVEL 3</span></div>
+                <div class="level-node locked"><div class="node-circle"><i class="fas fa-lock"></i></div><span class="level-label">LEVEL 4</span></div>
+                <div class="level-node locked"><div class="node-circle"><i class="fas fa-lock"></i></div><span class="level-label">LEVEL 5</span></div>
             </div>
         </div>
+    </section> 
+    
+    <section id="level-menu-view" style="display:none; padding: 20px;">
+        <div class="menu-header" style="margin-bottom: 25px;">
+            <button onclick="switchTab('home')" class="btn-upgrade btn-secondary" style="width:auto; padding: 8px 15px;">
+                <i class="fas fa-arrow-left"></i> Beranda
+            </button>
+            <h2 style="margin-top:15px; color: var(--primary-blue);">Level 1: The Newbie</h2>
+            <p style="color:#666; font-size:0.9rem;">Present, Past, & Future</p>
+        </div>
+
+        <div class="level-card" onclick="startSpeaking()">
+            <div class="level-icon" style="background: #ce82ff;">
+                <i class="fas fa-comment-dots"></i>
+        </div>
+        <div class="level-info">
+            <h3>Speaking Practice</h3>
+            <p>Latih pelafalan kalimatmu langsung!</p>
+        </div>
+        <div class="level-status">
+            <i class="fas fa-chevron-right"></i>
+        </div>
+    </div>
         
-        <div id="premium-ad-prompt-container" class="premium-prompt-container hidden">
+        <div class="sub-module-grid">
+            <div class="sub-card" onclick="startTenses()">
+                <i class="fas fa-book" style="color: #4f46e5;"></i>
+                <span>Tenses</span>
             </div>
+            <div class="sub-card" onclick="startDictation()">
+                <i class="fas fa-headphones" style="color: #1cb0f6;"></i>
+                <span>Dictation</span>
+            </div>
+            <div class="sub-card" onclick="startStoryMode()">
+                <i class="fas fa-book-open" style="color: #ff9600;"></i>
+                <span>Story Mode</span>
+            </div>
+            <div class="sub-card" onclick="alert('Fitur Suara Segera Hadir')">
+                <i class="fas fa-microphone" style="color: #58cc02;"></i>
+                <span>Pronunciation</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="league-section" style="display:none; padding: 20px; text-align: center;">
+        <i class="fas fa-trophy" style="font-size: 3rem; color: gold; margin-bottom: 10px;"></i>
+        <h2>Liga Mingguan</h2>
+        <div id="league-content" style="margin-top: 20px;">
+            <p style="color: #666;">Bersainglah dengan siswa lain untuk naik ke kasta tertinggi!</p>
+        </div>
+    </section>
+
+    <section id="profile-section" style="display:none; padding: 20px;">
+        <div style="text-align:center; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+            <div style="width: 80px; height: 80px; background: var(--primary-blue); border-radius: 50%; margin: 0 auto 10px auto; display: flex; align-items: center; justify-content: center; border: 4px solid #e1f5fe;">
+                <i class="fas fa-user-graduate" style="font-size: 2.5rem; color: white;"></i>
+            </div>
+            <h2 id="profile-user-name" style="margin-bottom: 5px;">Scholar</h2>
+            <span id="user-rank" style="background: #fff3e0; color: #ff9800; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; border: 1px solid #ffe0b2;">
+                <i class="fas fa-medal"></i> Rookie
+            </span>
+        </div>
+
+        <div style="margin-top: 25px; background: white; padding: 15px; border-radius: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; cursor: pointer;" onclick="showFullArchive()">
+                <h3 style="font-size: 1rem; margin: 0;"><i class="fas fa-book-bookmark"></i> Album Idiom</h3>
+                <span style="font-size: 0.8rem; color: var(--primary-blue); font-weight: bold;">Lihat Semua <i class="fas fa-chevron-right"></i></span>
+            </div>
+        
+            <div style="margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <span id="idiom-progress-text" style="font-size: 0.8rem; color: #666;">0 / 1000</span>
+                </div>
+                <div style="width: 100%; height: 8px; background: #eee; border-radius: 10px; overflow: hidden;">
+                    <div id="idiom-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%); transition: width 0.5s;"></div>
+                </div>
+            </div>
+
+            <div id="idiom-collection-list" style="margin-top: 10px;">
+                </div>
+        </div>
+    </section>
+
+    <div id="idiom-collection-list" style="margin-top: 20px;">
+        </div>
+    </section>
+
 
     </main>
-    
-    <nav id="bottom-nav">
-        <button onclick="window.loadView('home')" data-view="home" class="active">
-            <i class="fas fa-home"></i> Beranda
-        </button>
-        <button onclick="window.loadView('learn')" data-view="learn">
-            <i class="fas fa-book-open"></i> Belajar
-        </button>
-        <button onclick="window.loadView('tools')" data-view="tools">
-            <i class="fas fa-tools"></i> Alat
-        </button>
+
+    <div id="game-overlay" class="overlay" style="display: none;">
+        <div class="game-header">
+            <div class="progress-container">
+                <div id="progress-fill" style="width: 0%;"></div>
+            </div>
+        </div>
+        <div id="game-content" style="padding: 20px; width: 100%; flex: 1; overflow-y: auto;"></div>
+    </div>
+
+    <div id="premium-modal" class="overlay" style="display: none; background: rgba(0,0,0,0.8); z-index: 9999; justify-content:center; align-items:center;">
+        <div class="premium-popup">
+            <i class="fas fa-heart-broken" style="font-size: 3.5rem; color: #ff4b4b; margin-bottom: 15px;"></i>
+            <h2 id="premium-reason">Nyawa Habis!</h2>
+            <p id="premium-text" style="margin-bottom: 20px; color: #666;">Tonton iklan untuk mendapatkan nyawa gratis atau bergabung dengan Premium.</p>
+            <button class="btn-upgrade btn-ad" onclick="watchAdForLife()">
+                <i class="fas fa-video"></i> TONTON IKLAN (+1 ❤️)
+            </button>
+            <button class="btn-upgrade btn-premium" onclick="alert('Membuka Halaman Pembayaran...')">
+                <i class="fas fa-crown"></i> BELI PREMIUM (∞ ❤️)
+            </button>
+            <button class="btn-upgrade btn-secondary" onclick="closePremiumWall()">NANTI SAJA</button>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('home')">
+            <i class="fas fa-home"></i><span>Beranda</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('league')">
+            <i class="fas fa-trophy"></i><span>Liga</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('profile')">
+            <i class="fas fa-user"></i><span>Profil</span>
+        </div>
     </nav>
 
-    <script>
-        // --- FUNGSIONALITAS GLOBAL DUMMY/PLACEHOLDER (DIPINDAHKAN KE WINDOW) ---
-        
-        window.allowDrop = window.allowDrop || function(ev) { ev.preventDefault(); };
-        window.drag = window.drag || function(ev) { console.log('Drag start...'); };
-        window.drop = window.drop || function(ev) { ev.preventDefault(); };
-        window.removeToken = window.removeToken || function(token) { console.log('Remove token clicked...'); };
+    <script src="scripts/data.js"></script>
+    <script src="scripts/vocabulary_lv1.js"></script>
+    <script src="scripts/vocabulary_lv2.js"></script>
+    <script src="scripts/irregular_verbs.js"></script>
 
-        window.navigateToSubscription = window.navigateToSubscription || function() {
-            console.log('Navigasi ke halaman Langganan Premium');
-            alert("Fitur Premium Belum Diimplementasikan Penuh.");
-        };
-        
-        // Logika nyata dari fungsi ini akan ada di main.js
-        window.addPoints = window.addPoints || function(type, amount) {
-            console.log(`Placeholder: Menambah ${amount} ${type}`);
-        };
-        
-        // DUMMY/PLACEHOLDER untuk XP & Premium (Diperlukan oleh arena_logic)
-        window.getUserXp = window.getUserXp || function() { return 10000; };
-        window.userIsPremium = window.userIsPremium || false; // Default: False
-        
-        // Catatan: window.loadView akan didefinisikan secara resmi di main.js
-    </script>
+    <script src="scripts/idiom_data.js"></script> 
+    <script src="scripts/sb_data.js"></script>
+    <script src="scripts/dictation_L1_sentences.js"></script>
+    <script src="scripts/vocab_quiz_logic.js"></script>
+    <script src="scripts/arena_logic.js"></script>
+    <script src="scripts/tenses_logic.js"></script> 
+    <script src="scripts/story_logic.js"></script>
+    <script src="scripts/speaking_logic.js"></script>
 
-    <script type="module" src="scripts/main.js"></script> 
-    
-</body>
+    <script src="scripts/main.js"></script></body>
 </html>

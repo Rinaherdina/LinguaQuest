@@ -1,1248 +1,624 @@
-/* * styles/style.css
- * Desain Elegan & Menarik untuk LinguaQuest
- * Font: Inter
- */
-
-/* --- 0. Palet Warna & Variabel Global --- */
+/* ==========================================
+   BLOK 1: VARIABEL WARNA & DASAR (ROOT)
+   Fungsi: Mengatur tema warna seluruh aplikasi
+   ========================================== */
 :root {
-    /* Warna Brand & Fungsional */
-    --color-primary: #1E88E5; /* Biru Cerah: Utama, Aksi */
-    --color-secondary: #FFC107; /* Kuning Emas: Aksen, XP, Premium */
-    --color-success: #4CAF50; /* Hijau: Benar */
-    --color-error: #D32F2F; /* Merah: Kesalahan */
-    --color-info: #26C6DA; /* Aqua: Informasi */
-    
-    /* Warna Dasar UI */
-    --color-background: #F0F4F8; /* Abu-abu Sangat Muda: Latar Belakang Aplikasi */
-    --color-card-bg: #FFFFFF; /* Putih: Latar Belakang Kartu */
-    --color-text-dark: #263238; /* Teks Utama (Dark Blue-Grey) */
-    --color-text-light: #78909C; /* Teks Sekunder/Deskripsi */
-    
-    /* Styling */
-    --border-radius-lg: 16px; 
-    --border-radius-sm: 8px; 
-    --shadow-soft: 0 6px 20px rgba(0, 0, 0, 0.08);
-    --shadow-lift: 0 10px 30px rgba(0, 0, 0, 0.12);
+    --primary-green: #58cc02;
+    --primary-blue: #1a73e8; /* Biru yang lebih tegas */
+    --dark-blue: #0d47a1;    /* Biru tua untuk aksen mewah */
+    --danger-red: #e11d48;   /* Merah elegan */
+    --warning-orange: #ff9600;
+    --premium-gold: #ffc107;
+    --text-dark: #333333;
+    --text-light: #777777;
+    --bg-white: #ffffff;
+    --border-gray: #f0f0f0;
+    --bg-gray: #ffffff;      /* Paksa background tetap putih */
+    --shadow-color: rgba(0, 0, 0, 0.08);
+    --lingua-blue: #2196F3; /* Warna biru standar Beranda */
 }
 
-/* --- 1. Reset & Tipografi Dasar --- */
-body {
-    font-family: 'Inter', sans-serif;
-    margin: 0;
-    padding-bottom: 80px;
-    padding-top: 60px;
-    background-color: var(--color-background);
-    color: var(--color-text-dark);
-    line-height: 1.6;
-    min-height: 100vh;
-    /* 🎯 PERBAIKAN DARI USER: Teks Mepet ke Pinggir */
-    /* Menambahkan padding horizontal minimum di body */
-    padding-left: 15px;
-    padding-right: 15px;
-}
-
-/* --- HEADER APLIKASI --- */
-#app-header {
-    background-color: var(--color-card-bg);
-    border-bottom: 1px solid #ECEFF1;
-    padding: 10px 0; /* Ubah padding horizontal menjadi 0 karena kita akan mengaturnya di logo-container */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    position: fixed; 
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 10;
-    height: 60px;
+* {
     box-sizing: border-box;
-    display: flex; /* 🎯 TAMBAHAN: Untuk memungkinkan layout internal */
-    align-items: center; /* 🎯 TAMBAHAN: Memastikan konten terpusat vertikal */
-}
-
-.logo-container {
-    display: flex;
-    align-items: center;
-    /* max-width: 800px; <--- Hapus atau pindahkan ke main untuk konten */
-    /* margin: 0 auto; <--- Hapus karena header sudah full width */
-    height: 100%;
-    /* PERBAIKAN 1: MENGUBAH JUSTIFY CONTENT */
-    /* Ubah dari center menjadi flex-start untuk mengakomodasi tombol di kanan */
-    justify-content: flex-start; 
-    padding: 0 15px; 
-    flex-grow: 1; /* Biarkan logo mengambil ruang yang dibutuhkan */
-}
-/* 🎯 TAMBAHAN: Gaya untuk User Stats (Bintang Ilmu & Premium) */
-.user-stats {
-    display: flex;
-    align-items: center;
-    gap: 15px; /* Jarak antara Bintang Ilmu dan Tombol Premium */
-    padding-right: 15px; /* Padding di sisi kanan */
-    flex-shrink: 0; /* Pastikan tidak menyusut */
-}
-
-.stat-item {
-    display: flex;
-    align-items: center;
-    font-weight: 700;
-    font-size: 1.1em;
-    color: var(--color-text-dark);
-}
-
-.stat-item i {
-    color: var(--color-secondary); /* Kuning Emas untuk Bintang */
-    margin-right: 5px;
-}
-
-.premium-btn {
-    background-color: var(--color-secondary);
-    color: var(--color-text-dark);
-    padding: 6px 12px;
-    border: none;
-    font-weight: 700;
-    font-size: 0.9em;
-    box-shadow: 0 2px 5px rgba(255, 193, 7, 0.4);
-}
-.premium-btn:hover {
-    background-color: #FFB300;
-    transform: none; /* Jangan bergerak */
-}
-
-@media (min-width: 800px) {
-    #app-header .logo-container, 
-    #app-header .user-stats {
-        /* Memastikan konten header sejajar dengan konten utama */
-        max-width: 800px;
-        margin: 0 auto;
-    }
-    #app-header {
-        /* Perlu menata ulang agar konten header terpusat */
-        display: flex;
-        justify-content: center;
-        /* Hapus padding-right dari .user-stats dan tambahkan di sini jika perlu */
-    }
-    
-    /* PENTING: Gunakan header-content-wrapper */
-    #app-header .header-content-wrapper {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-        max-width: 800px; /* Lebar maksimal konten header */
-        padding: 0 15px;
-    }
-}
-/* Catatan: Untuk menerapkan ini, Anda perlu membungkus logo-container dan user-stats 
-   dalam div baru bernama 'header-content-wrapper' di HTML. Jika tidak, abaikan media query ini. */
-
-.logo-icon {
-    font-size: 1.8em;
-    margin-right: 8px;
-    color: var(--color-secondary);
-}
-
-#app-header h1 {
-    font-size: 1.4em;
-    font-weight: 900;
-    color: var(--color-primary);
     margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    -webkit-tap-highlight-color: transparent;
 }
-/* ------------------------------------------- */
 
-.welcome-heading {
+body {
+    background-color: var(--bg-gray);
+    color: var(--text-dark);
+    padding-bottom: 90px;
+    overflow-x: hidden;
+}
+
+/* Header dengan garis aksen ganda */
+.header-stats {
+    background: var(--bg-white);
+    border-bottom: 4px solid var(--primary-blue); /* Garis Biru di bawah header */
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 15px;
+    box-shadow: 0 2px 10px var(--shadow-color);
+}
+
+.app-header {
+    /* Menggunakan Gradient Biru Keunguan dengan aksen Merah tipis di pinggir */
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); 
+    padding: 30px 20px;
     text-align: center;
-    border-left: none;
-    padding-left: 0;
-    margin-bottom: 20px;
-    font-size: 1.8em;
-    color: var(--color-primary);
-}
-
-
-#app-content {
-    /* 🎯 PERBAIKAN DARI USER: Teks Mepet (Hapus padding 20px di sini karena sudah ada di body) */
-    padding: 20px 0; 
-    max-width: 800px;
-    margin: 0 auto;
-    opacity: 1;
-    transition: opacity 0.3s ease-in-out;
-}
-
-h1, h2, h3 {
-    font-weight: 800;
-    color: var(--color-text-dark);
-    margin-top: 0;
-}
-
-h2 {
-    border-left: 5px solid var(--color-primary);
-    padding-left: 15px;
-    margin-bottom: 30px;
-    font-size: 1.6em;
-}
-
-p {
-    color: var(--color-text-light);
-}
-
-/* --- 2. Kartu & Struktur UI --- */
-.card, .section-card, .result-box, .story-box {
-    background-color: var(--color-card-bg);
-    padding: 20px;
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-soft);
-    margin-bottom: 20px;
-    transition: all 0.2s ease-in-out;
-}
-
-.card:hover, .section-card:hover {
-    /* Hapus transform: translateY(-5px) untuk kartu biasa agar tidak mengganggu tata letak berulang (Lesson Path) */
-    box-shadow: var(--shadow-lift);
-}
-
-/* Kartu Khusus Idiom */
-.idiom-card {
-    background: linear-gradient(135deg, var(--color-info), #00BCD4);
-    color: white;
-    box-shadow: 0 8px 25px rgba(38, 198, 218, 0.5);
-    /* 🎯 PERBAIKAN DARI USER: Menambahkan padding agar konten tidak mepet */
-    padding: 30px 20px; 
-}
-.idiom-card h3, .idiom-card p {
-    color: white;
-    font-weight: 600;
-}
-.idiom-card .target-text {
-    font-size: 1.5em;
-    font-style: italic;
-    margin-top: 5px;
-}
-
-/* --- BARU: Gamification Card (Home) --- */
-.gamification-card {
-    background: linear-gradient(135deg, #42A5F5, var(--color-primary));
-    color: white;
-    padding: 25px;
-    margin-bottom: 30px;
-    box-shadow: 0 10px 30px rgba(30, 136, 229, 0.4);
-}
-.gamification-card h4 {
-    color: white;
-    margin: 0;
-    font-size: 1.3em;
-}
-.level-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-.level-icon {
-    font-size: 2.5em;
-    color: var(--color-secondary); /* Kuning Emas untuk Ikon Level */
-    margin-right: 15px;
-}
-.text-info {
-    flex-grow: 1;
-}
-
-.xp-progress p {
-    color: #E3F2FD;
-    margin: 0 0 5px 0;
-    font-size: 0.9em;
-}
-.progress-bar-container {
-    height: 10px;
-    background-color: rgba(255, 255, 255, 0.3);
-    border-radius: 5px;
+    border-radius: 0 0 30px 30px; /* Lengkungan bawah agar elegan */
+    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
+    position: relative;
     overflow: hidden;
 }
-.progress-bar {
-    height: 100%;
-    background-color: var(--color-secondary); /* Kuning Emas */
-    transition: width 0.5s ease-out;
-}
 
-/* --- BARU: Lesson Path Cards (Kurikulum) --- */
-.lesson-card {
-    display: flex;
-    align-items: center;
-    padding: 15px 20px;
-    border-left: 8px solid var(--color-primary);
-    cursor: pointer;
-    margin-bottom: 15px;
-}
-
-.lesson-card:hover {
-    background-color: #E3F2FD;
-    transform: translateY(-3px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-}
-
-.lesson-card.locked {
-    border-left: 8px solid var(--color-error);
-    opacity: 0.6;
-    cursor: not-allowed;
-    background-color: #FEE;
-}
-.lesson-card.locked:hover {
-    transform: none;
-    box-shadow: var(--shadow-soft);
-}
-
-.lesson-icon {
-    font-size: 1.8em;
-    color: var(--color-primary);
-    margin-right: 20px;
-}
-.lesson-card.locked .lesson-icon {
-    color: var(--color-error);
-}
-
-.lesson-details {
-    flex-grow: 1;
-}
-.lesson-details h4 {
-    margin: 0;
-    font-size: 1.1em;
-}
-.lesson-details p {
-    margin: 4px 0 0 0;
-    font-size: 0.9em;
-}
-.lock-indicator {
-    font-size: 1.2em;
-    color: var(--color-text-light);
-}
-
-/* --- BARU: Module List (Inside Lesson) --- */
-.module-list {
-    display: grid;
-    gap: 15px;
-    margin-top: 20px;
-}
-.module-card {
-    padding: 15px;
-    border: 1px solid #CFD8DC;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.module-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-.module-header h4 {
-    margin-bottom: 5px;
-    color: var(--color-primary);
-}
-.module-header small {
-    color: var(--color-text-light);
-}
-.module-start-btn {
-    width: auto;
-    padding: 10px 20px;
-    margin: 0;
-    font-size: 0.9em;
-    white-space: nowrap;
-}
-.module-card.locked {
-    opacity: 0.6;
-    cursor: not-allowed;
-    background-color: #FAFAFA;
-}
-.module-card.locked:hover {
-    transform: none;
-}
-/* ------------------------------------------- */
-
-/* 🎯 PERBAIKAN DARI USER: Tombol Navigasi Home (Mengubah '>' menjadi Kotak) */
-/* Asumsi class: home-card-mini digunakan untuk Idiom Harian/Susun Kalimat Harian */
-
-.home-card-mini {
-    display: flex;
-    align-items: center;
-    justify-content: space-between; 
-    padding: 15px 20px; 
-    margin-bottom: 10px;
-    cursor: pointer;
-    border-radius: 10px;
-    transition: background-color 0.2s;
-    background-color: var(--color-card-bg); /* Menggunakan warna card standar */
-    box-shadow: var(--shadow-soft);
-}
-
-.home-card-mini .card-details {
-    flex-grow: 1; 
-    margin-right: 10px;
-}
-
-/* Gaya ikon panah yang sekarang diubah menjadi Tombol Kotak */
-.home-card-mini i.fa-chevron-right, 
-.home-card-mini i.fas.fa-chevron-right { 
-    background-color: var(--color-primary); /* Warna latar tombol */
-    color: white; /* Warna ikon */
-    width: 35px; /* Ukuran kotak */
-    height: 35px; /* Ukuran kotak */
-    border-radius: var(--border-radius-sm); /* Bentuk kotak dengan sudut */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    flex-shrink: 0; 
-}
-/* END OF FIX */
-
-
-/* --- 3. Tombol & Input --- */
-button {
-    border-radius: var(--border-radius-sm);
-    cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
-    font-weight: 600;
-    line-height: 1;
-}
-
-.primary-btn, .btn-next {
-    background-color: var(--color-primary);
-    color: white;
-    padding: 14px 25px;
-    border: none;
-    width: 100%;
-    margin-top: 15px;
-    box-shadow: 0 4px 15px rgba(30, 136, 229, 0.4);
-}
-.primary-btn:hover, .btn-next:hover {
-    background-color: #1565C0;
-    transform: translateY(-1px);
-}
-
-.secondary-btn {
-    background-color: transparent;
-    border: 2px solid var(--color-primary);
-    color: var(--color-primary);
-    padding: 12px 25px;
-    font-weight: 600;
-    width: 100%;
-    margin-top: 10px;
-}
-.secondary-btn:hover {
-    background-color: rgba(30, 136, 229, 0.1);
-}
-.back-button { /* Untuk tombol kembali di Story atau Modul */
-    width: auto;
-    max-width: 250px;
-    margin-left: 0;
-    margin-bottom: 20px;
-}
-
-
-/* Gaya Tombol Idiom dengan Latar Belakang Putih */
-.btn-idiom-white {
-    border-radius: var(--border-radius-sm);
-    cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
-    font-weight: 600;
-    line-height: 1;
-    background-color: white; 
-    color: var(--color-info); 
-    padding: 14px 25px;
-    border: none;
-    width: 100%;
-    margin-top: 15px;
-    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.5); 
-}
-.btn-idiom-white:hover {
-    background-color: #E0F7FA; 
-    transform: translateY(-1px);
-}
-
-/* Memusatkan Tombol Premium */
-.btn-premium {
-    background-color: var(--color-secondary);
-    color: var(--color-text-dark);
-    padding: 15px 25px;
-    border: none;
-    font-weight: 700;
-    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.5);
-    display: block; 
-    max-width: 300px; 
-    margin: 20px auto; 
-}
-.btn-premium:hover {
-    background-color: #FFB300;
-}
-
-/* Gaya Tombol Aksi Utama di Beranda */
-.home-action-btn-container {
-    display: flex;
-    flex-direction: column; 
-    gap: 15px; 
-    margin: 30px auto;
-    max-width: 450px; 
-}
-
-.home-action-btn {
-    border-radius: var(--border-radius-lg); 
-    cursor: pointer;
-    transition: all 0.2s;
-    font-weight: 700;
-    background-color: var(--color-card-bg); 
-    border: 3px solid var(--color-primary); 
-    color: var(--color-primary); 
-    padding: 18px 25px; 
-    font-size: 1.1em; 
-    box-shadow: 0 4px 10px rgba(30, 136, 229, 0.2);
-    text-align: center; 
-    width: 100%; 
-}
-
-.home-action-btn:hover {
-    background-color: #E3F2FD; 
-    transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(30, 136, 229, 0.4);
-}
-
-/* Media Query untuk Layar Lebar agar tombol berdampingan */
-@media (min-width: 600px) {
-    .home-action-btn-container {
-        flex-direction: row; 
-        justify-content: center;
-        max-width: 800px;
-    }
-    .home-action-btn {
-        flex: 1; 
-        width: auto;
-    }
-}
-
-
-/* Input & Select Fields */
-input[type="text"], textarea, select {
-    width: calc(100% - 24px);
-    padding: 12px;
-    margin-bottom: 15px;
-    border: 1px solid #CFD8DC;
-    border-radius: var(--border-radius-sm);
-    background-color: #fff;
-    box-sizing: border-box;
-    font-size: 1em;
-    color: var(--color-text-dark);
-}
-
-/* --- 4. Bottom Navigation (Lebih menonjol) --- */
-#bottom-nav {
-    position: fixed;
-    bottom: 0;
+/* Hiasan Garis Merah di atas header agar terlihat premium */
+.app-header::before {
+    content: "";
+    position: absolute;
+    top: 0;
     left: 0;
-    right: 0;
-    display: flex;
-    justify-content: space-around;
-    background-color: #ffffff; 
-    border-top: 1px solid #eee;
-    box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
-    height: 70px; 
-    z-index: 10;
+    width: 100%;
+    height: 5px;
+    background: #ef4444; /* Warna Merah */
 }
 
-#bottom-nav button {
-    flex-grow: 1;
-    background: none;
+.app-header h1 {
+    color: white;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+.app-header i {
+    color: #fbbf24; /* Warna Emas untuk ikon topi toga */
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    display: block;
+}
+
+/* Kartu Modul dengan Aksen Merah & Biru */
+.module-card {
+    background: var(--bg-white);
+    border: 1px solid var(--border-gray);
+    border-radius: 16px;
+    padding: 20px;
+    margin: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    /* Efek garis dekorasi di samping kiri */
+    border-left: 6px solid var(--primary-blue); 
+}
+
+/* Efek saat ditekan/hover: Garis berubah Merah */
+.module-card:active, .module-card:hover {
+    transform: scale(0.98);
+    border-left-color: var(--danger-red);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Card Idiom Khusus: Gradasi Mewah Merah-Biru */
+.idiom-card {
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
+    color: white;
+    border-radius: 20px;
+    margin: 15px;
+    padding: 25px;
+    position: relative;
+    overflow: hidden;
     border: none;
+}
+
+/* Tambahkan hiasan lingkaran transparan di pojok kartu */
+.idiom-card::after {
+    content: "";
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 80px;
+    height: 80px;
+    background: var(--danger-red);
+    opacity: 0.3;
+    border-radius: 50%;
+}
+
+.idiom-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* Lebih fleksibel */
+    gap: 12px;
+    padding: 15px 5px;
+    background: #f9f9f9;
+    border-radius: 12px;
+}
+
+/* Kartu Mini Idiom */
+.idiom-card-mini {
+    background: white;
+    border-radius: 12px;
+    padding: 12px 8px;
+    text-align: center;
+    border: 1px solid #eef2f6;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    transition: all 0.2s ease;
+    cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    /* PERBAIKAN 4: Ukuran font lebih besar */
-    font-size: 14px; 
-    color: var(--color-text-light);
-    padding: 0;
-    transition: color 0.2s, background-color 0.3s, border-radius 0.3s; 
-    gap: 4px; 
 }
 
-/* PERBAIKAN 4: Gaya Tombol AKTIF/Beranda (Latar belakang biru) */
-#bottom-nav .active {
-    color: white; 
-    font-weight: 700;
-    background-color: var(--color-primary); 
-    border-radius: 10px; 
-    margin: 5px 8px; 
-    box-shadow: 0 4px 10px rgba(30, 136, 229, 0.5); 
+.idiom-card-mini:active {
+    transform: scale(0.95);
+    background: #f0f7ff;
 }
 
-/* 🎯 PERBAIKAN IKON AKTIF */
-#bottom-nav .active i {
-    color: white; /* Pastikan ikon berwarna putih juga saat aktif */
+.idiom-card-mini i {
+    font-size: 1.2rem;
+    color: #ffcc00; /* Warna lampu kuning */
+    margin-bottom: 6px;
 }
-/* END OF FIX */
 
-
-/* --- 5. Tenses Transformer (Tabel yang Elegan) --- */
-.tenses-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    margin-top: 20px;
-    overflow: hidden;
-    border-radius: var(--border-radius-sm);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-.tenses-table th, .tenses-table td {
-    padding: 12px;
-    border: none;
-    border-bottom: 1px solid #ECEFF1;
-    text-align: left;
-    vertical-align: top;
-}
-.tenses-table th {
-    background-color: #E3F2FD;
-    color: var(--color-primary);
-    font-weight: 700;
+.idiom-card-mini span {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: bold;
     text-transform: uppercase;
-    font-size: 0.8em;
-}
-.tenses-table tr:nth-child(even) {
-    background-color: #F8F9FA;
-}
-.tenses-table tr:last-child td {
-    border-bottom: none;
-}
-.tenses-controls {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-    flex-wrap: wrap; /* Pastikan responsif */
-}
-.tenses-controls select, .tenses-controls input {
-    flex-grow: 1;
-    min-width: 150px;
-    margin-bottom: 0;
+    color: #444;
 }
 
-/* --- 6. Practice Arena (Desain Token Drag & Drop) --- */
-.arena-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-.arena-buttons button {
-    flex-basis: calc(50% - 5px);
-    background-color: var(--color-info);
-}
-
-/* 🎯 TAMBAHAN BARU: Tata Letak 3 Kolom untuk Modul Belajar */
-.arena-buttons-3-col {
-    display: flex;
-    flex-direction: column; /* Default: stack untuk mobile */
-    gap: 15px;
-    margin-top: 20px;
-}
-
-/* 🎯 TAMBAHAN BARU: Tombol Arena Besar */
-.arena-btn-lg {
-    flex-grow: 1; 
-    background-color: var(--color-primary); /* Ubah warna untuk menonjol */
-    color: white;
-    padding: 25px 15px; /* Membuat tombol lebih tinggi/besar */
-    font-size: 1.1em;
-    font-weight: 700;
-    text-align: center;
-    border-radius: 12px;
-    box-shadow: 0 6px 15px rgba(30, 136, 229, 0.5); 
-    border: none;
-}
-
-.arena-btn-lg i {
-    display: block;
-    font-size: 1.8em; /* Ikon lebih besar */
+/* Item di dalam Pop-up Arsip */
+.archive-item {
+    background: #ffffff;
+    padding: 12px;
+    border-radius: 10px;
+    border-left: 4px solid var(--primary-blue);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     margin-bottom: 8px;
-    color: var(--color-secondary); /* Ikon berwarna kuning emas */
 }
 
-.arena-btn-lg:hover {
-    background-color: #1565C0;
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(30, 136, 229, 0.7);
-}
-
-/* Media Query untuk Layar Lebar agar 3 tombol berdampingan */
-@media (min-width: 600px) {
-    .arena-buttons-3-col {
-        flex-direction: row; /* Desktop: berdampingan */
-        flex-wrap: nowrap;
-        justify-content: space-between;
-    }
-    .arena-buttons button {
-        /* Kembalikan flex-basis default untuk tombol kecil di desktop jika masih ada */
-        flex-basis: auto;
-    }
-}
-/* END OF NEW ARENA STYLES */
-
-.word-container {
-    border: 2px dashed var(--color-text-light);
-    padding: 15px;
-    min-height: 80px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    background-color: #fff;
-    border-radius: var(--border-radius-sm);
-    margin-bottom: 15px;
-}
-
-.drop-zone, .sentence-area {
-    border: 2px solid var(--color-primary);
-    background-color: #E3F2FD; /* Warna lebih ringan dari yang asli */
-    padding: 15px;
-    min-height: 55px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
-    border-radius: var(--border-radius-sm);
-    margin-bottom: 20px;
-    font-style: italic;
-    color: var(--color-text-light);
-}
-
-.word-token, .word-token-placed {
-    padding: 8px 15px;
-    border: none;
-    border-radius: 20px;
-    font-weight: 600;
-    cursor: grab;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-    transition: transform 0.1s;
-}
-
-.word-token-placed {
-    background-color: var(--color-primary);
-    color: white;
-    /* 🎯 TAMBAHAN: Kembalikan kursor ke pointer agar jelas bisa diklik */
-    cursor: pointer; 
-}
-.word-token-placed:hover {
-    background-color: #1565C0;
-    /* 🎯 TAMBAHAN: Berikan sedikit efek agar terlihat interaktif saat diklik */
-    transform: scale(1.03); 
-}
-
-.word-token-placed {
-    background-color: var(--color-primary);
-    color: white;
-}
-.word-token-placed:hover {
-    background-color: #1565C0;
-}
-
-/* Dikte & Pronunciation */
-.target-sentence {
-    font-size: 1.2em;
-    margin: 20px 0;
-    padding: 15px;
-    background-color: #fff;
-    border: 1px dashed var(--color-secondary);
-    border-radius: var(--border-radius-sm);
-    text-align: center;
-}
-
-/* --- 7. Story Mode (Elemen Imersif) --- */
-.story-box {
-    background-color: #fff;
-    padding: 0;
-    border-radius: var(--border-radius-lg);
-}
-.story-box h2 {
-    border-left: none;
-    padding-left: 0;
-    text-align: center;
-    color: var(--color-primary);
-    font-size: 1.5em;
-    margin-bottom: 20px;
-}
-.story-text {
-    background-color: #E0F7FA;
-    padding: 18px;
-    border-radius: var(--border-radius-lg);
-    border-left: 6px solid var(--color-info);
-    margin: 15px 0;
-    font-size: 1.1em;
-    color: var(--color-text-dark);
-}
-.iap-wall-story {
-    border: 2px solid var(--color-secondary);
-    padding: 20px;
-    border-radius: var(--border-radius-lg);
-    text-align: center;
-    background-color: #FFFDE7;
-}
-
-/* --- 8. Feedback & Notifikasi --- */
-.feedback-area {
+/* Tombol Lihat Semua */
+.btn-view-all {
+    width: 100%;
     margin-top: 15px;
+    background: #f0f7ff;
+    color: var(--primary-blue);
+    border: 2px dashed #4facfe;
     padding: 10px;
-    border-radius: var(--border-radius-sm);
-    text-align: center;
-}
-.feedback-correct {
-    color: var(--color-success);
-    font-weight: 700;
-}
-.feedback-wrong {
-    color: var(--color-error);
-    font-weight: 700;
-}
-.demo-note {
-    font-size: 0.9em;
-    color: var(--color-secondary);
-    font-style: italic;
-    border-top: 1px dashed #FFECB3;
-    padding-top: 10px;
-    margin-top: 15px;
-}
-.premium-wall-short {
-    border: 2px solid var(--color-secondary);
-    background-color: #FFFDE7;
-    padding: 15px;
-    text-align: center;
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
 }
 
-/* ======================================================== */
-/* FILE: styles/style.css */
-/* ======================================================== */
-
-/* --- CSS Variables / Warna Dasar --- */
-:root {
-    /* Base Colors */
-    --color-primary: #8e44ad; /* Deep Purple (Brand Color) */
-    --color-primary-dark: #7a3a99;
-    --color-accent: #2ecc71; /* Emerald Green */
-    --color-accent-light: #34ed84;
-    --color-accent-dark: #27ae60;
-    --color-error: #e74c3c; /* Red */
-    --color-success: #28a745; /* Green */
-    --color-info: #3498db; /* Blue */
-
-    /* Text & Backgrounds */
-    --color-background-light: #f4f7f6;
-    --color-background-dark: #2c3e50; /* Dark Blue-Grey (App Background) */
-    --color-card-background: #34495e; /* Slightly lighter dark for card */
-    --color-text-dark: #333333;
-    --color-text-light: #ecf0f1; /* Light Grey */
-    --color-text-secondary: #bdc3c7; /* Lighter grey for secondary text */
-
-    /* Buttons & Inputs */
-    --color-button-secondary: #607d8b; /* Blue Grey */
-    --color-button-secondary-hover: #546e7a;
-    --color-input-background: #4a6572; /* Even lighter dark for input */
-    --color-border: #7f8c8d; /* Grey border */
-    --color-border-dark: #4e6371; /* Darker border for header */
-
-    /* RGB for shadows */
-    --color-primary-rgb: 142, 68, 173;
-}
-
-/* --- Global Reset and Base Styles --- */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Inter', sans-serif;
-    background-color: var(--color-background-dark);
-    color: var(--color-text-light);
-    line-height: 1.6;
-    padding-bottom: 60px; /* Space for bottom nav */
-}
-
-/* --- App Header --- */
-#app-header {
+/* Ikon Modul */
+.module-icon {
+    width: 50px;
+    height: 50px;
+    background: #f0f7ff;
+    border-radius: 12px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 15px 20px;
-    background-color: var(--color-card-background);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    justify-content: center;
+    color: var(--primary-blue);
+    font-size: 1.5rem;
+}
+
+/* ==========================================
+   BLOK 2: IDENTITAS APLIKASI (HEADER LOGO)
+   ========================================== */
+.app-identity {
+    background: var(--bg-white);
+    padding: 20px 0 10px 0;
+    text-align: center;
+}
+
+.brand-name {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--primary-blue);
+    letter-spacing: 2px;
+}
+
+.app-logo-icon {
+    font-size: 2rem;
+    color: var(--primary-blue);
+    margin-bottom: 5px;
+}
+
+/* ==========================================
+   BLOK 3: BAR STATISTIK (LIVES, GEMS, XP)
+   ========================================== */
+.stats-bar {
     position: sticky;
     top: 0;
-    z-index: 1000;
-}
-
-.logo-container {
+    background: var(--bg-white);
     display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.logo-icon {
-    font-size: 1.5em;
-}
-
-#app-header h1 {
-    font-size: 1.4em;
-    font-weight: 800;
-    color: var(--color-text-light);
-}
-
-.user-stats {
-    display: flex;
-    align-items: center;
-    gap: 15px;
+    justify-content: space-around;
+    padding: 10px;
+    border-bottom: 2px solid var(--border-gray);
+    z-index: 100;
 }
 
 .stat-item {
-    font-size: 1.1em;
-    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.stat-item i.fa-heart { color: var(--danger-red); }
+.stat-item i.fa-gem { color: var(--primary-blue); }
+.stat-item i.fa-star { color: var(--warning-orange); }
+
+/* ==========================================
+   BLOK 4: KARTU MODUL (IDIOM & SB)
+   ========================================== */
+.module-card {
+    background: white;
+    margin: 15px 20px;
+    padding: 20px;
+    border-radius: 20px;
+    border: 2px solid var(--border-gray);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+    transition: transform 0.1s, border-color 0.2s;
+    box-shadow: 0 4px 0 var(--border-gray);
+}
+
+.module-card:active {
+    transform: translateY(4px);
+    box-shadow: none;
+}
+
+.module-icon {
+    font-size: 1.8rem;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+}
+
+.idiom-theme .module-icon { background: #e1f5fe; color: #03a9f4; }
+.sb-theme .module-icon { background: #f1f8e9; color: #7cb342; }
+
+.module-info h3 { font-size: 1.1rem; margin-bottom: 2px; }
+.module-info p { font-size: 0.9rem; color: var(--text-light); }
+.arrow-icon { margin-left: auto; color: var(--border-gray); }
+
+.word-chip {
+    padding: 10px 18px;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-bottom: 4px solid #e0e0e0; /* Efek 3D */
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.1s;
+    margin: 4px;
+    display: inline-block;
+}
+
+.word-chip:active {
+    border-bottom: 2px solid #e0e0e0;
+    transform: translateY(2px); /* Efek tertekan ke bawah */
+}
+
+#sb-target-area {
+    min-height: 60px;
+    border-bottom: 2px dashed var(--primary-blue);
+    margin-bottom: 20px;
+    padding: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    background-color: rgba(26, 115, 232, 0.05); /* Biru sangat muda */
+    border-radius: 10px 10px 0 0;
+}
+
+/* Warna khusus untuk tema Vocab */
+.vocab-theme { border-left-color: var(--warning-orange) !important; }
+.vocab-theme .module-icon { background: #fff8e1; color: var(--warning-orange); }
+
+/* Agar transisi border-left mulus saat dihover (selaras dengan style Anda) */
+.vocab-theme:active, .vocab-theme:hover {
+    border-left-color: var(--danger-red) !important;
+}
+
+/* ==========================================
+   BLOK 5: THE ARENA (LEARNING PATHWAY)
+   ========================================== */
+.arena-section {
+    padding: 20px;
+    text-align: center;
+}
+
+.level-pathway {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 60px;
+    padding: 20px 0;
+}
+
+.level-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+}
+
+.node-circle {
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 800;
+    background: #e5e5e5;
+    box-shadow: 0 6px 0 #ccc;
+    transition: 0.2s;
+}
+
+.level-node.active .node-circle {
+    background: var(--primary-green);
+    color: white;
+    box-shadow: 0 6px 0 #46a302;
+}
+
+.level-node.locked .node-circle {
+    color: #afafaf;
+    background: #e5e5e5;
+    box-shadow: 0 6px 0 #bcbcbc;
+}
+
+.level-label {
+    margin-top: 10px;
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: var(--text-dark);
+}
+
+/* ==========================================
+   BLOK 6: SUB-MENU LEVEL & STORY CARDS
+   ========================================== */
+.sub-module-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    padding: 20px;
+}
+
+.sub-card {
+    background: white;
+    border: 2px solid var(--border-gray);
+    padding: 20px;
+    border-radius: 18px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 4px 0 var(--border-gray);
+    transition: 0.1s;
+}
+
+.sub-card:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 var(--border-gray);
+}
+
+.sub-card i { font-size: 1.8rem; display: block; margin-bottom: 10px; color: var(--primary-blue); }
+
+/* ==========================================
+   BLOK 7: GAME OVERLAY & PROGRESS
+   ========================================== */
+.overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: white;
+    z-index: 2000;
+    display: none;
+    flex-direction: column;
+}
+
+.theory-card {
+    padding: 25px;
+    max-width: 500px;
+    margin: auto;
+    width: 90%;
+    position: relative; /* Tambahkan ini agar tombol kembali mengacu ke kartu ini */
+    padding-top: 50px;    /* Tambahkan ruang agar tombol tidak menutupi judul */
+}
+
+.back-btn {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: #f0f0f0; /* Beri background sedikit agar terlihat */
+    border: none;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #444;
     display: flex;
     align-items: center;
     gap: 5px;
+    z-index: 10;
 }
 
-.text-warning {
-    color: #f39c12; /* Amber/Gold for stars */
+.progress-container {
+    flex: 1;
+    height: 12px;
+    background: #e5e5e5;
+    border-radius: 10px;
+    margin: 0 10px;
 }
 
-.premium-btn {
-    background-color: var(--color-info);
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 0.9em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.2s;
+#progress-fill {
+    height: 100%;
+    background: var(--primary-green);
+    border-radius: 10px;
+    transition: width 0.4s ease-out;
 }
 
-.premium-btn:hover {
-    background-color: #2980b9;
-}
-
-/* --- Main Content --- */
-#app-content {
-    padding: 20px;
-    min-height: calc(100vh - 120px); /* Adjust height */
-}
-
-/* --- Loading Screen (Initial State) --- */
-#loading-screen {
+/* ==========================================
+   BLOK 8: PREMIUM WALL & MODAL IKLAN
+   ========================================== */
+.premium-popup {
     text-align: center;
-    padding-top: 50px;
-    color: var(--color-text-secondary);
+    background: white;
+    padding: 40px 30px;
+    border-radius: 25px;
+    max-width: 400px;
+    width: 90%;
+    margin: auto;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    animation: slideUp 0.3s ease-out;
 }
 
+@keyframes slideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
 
-/* --- Dictation Challenge Container (Arena View) --- */
-.challenge-container {
-    padding: 20px;
-    max-width: 700px;
-    margin: 30px auto;
+.btn-upgrade {
+    padding: 15px;
     border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-    background-color: var(--color-background-dark);
-}
-
-.challenge-container .header-section {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-    border-bottom: 1px solid var(--color-border-dark);
-    padding-bottom: 15px;
-}
-
-.back-button {
-    background: none;
     border: none;
-    color: var(--color-accent-light);
-    font-size: 1.1em;
-    cursor: pointer;
-    padding: 8px 12px;
-    border-radius: 8px;
-    transition: background-color 0.2s ease;
-}
-
-.back-button:hover {
-    background-color: rgba(var(--color-primary-rgb), 0.1);
-}
-
-.lives-indicator .live-count {
-    font-size: 1.5em;
     font-weight: bold;
-    color: var(--color-error); /* Red hearts */
-}
-
-/* --- Challenge Card (Dictation Specific) --- */
-.challenge-card {
-    background-color: var(--color-card-background);
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-.challenge-title {
-    font-size: 2em;
-    font-weight: 700;
-    color: var(--color-primary);
-    margin-bottom: 10px;
-    text-align: center;
-}
-
-.module-info {
-    font-size: 1.1em;
-    color: var(--color-text-secondary);
-    text-align: center;
-    margin-bottom: 30px;
-    font-style: italic;
-}
-
-/* --- Audio Section --- */
-.audio-section {
+    font-size: 1rem;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
     display: flex;
     justify-content: center;
-    gap: 15px;
-    margin-bottom: 30px;
-}
-
-.audio-button {
-    background-color: var(--color-accent);
-    color: white;
-    border: none;
-    padding: 15px 25px;
-    border-radius: 10px;
-    font-size: 1.1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
-.audio-button:hover {
-    background-color: var(--color-accent-dark);
-    transform: translateY(-2px);
-}
+.btn-premium { background: var(--primary-blue); color: white; box-shadow: 0 4px 0 var(--dark-blue); }
+.btn-ad { background: var(--primary-green); color: white; box-shadow: 0 4px 0 #46a302; }
+.btn-secondary { background: #eee; color: #777; }
 
-.audio-button.secondary {
-    background-color: var(--color-button-secondary);
-}
-
-.audio-button.secondary:hover {
-    background-color: var(--color-button-secondary-hover);
-}
-
-/* --- Input Section --- */
-.input-section {
-    margin-bottom: 25px;
-}
-
-.dictation-textarea {
-    width: 100%;
-    padding: 15px;
-    border: 1px solid var(--color-border);
-    border-radius: 10px;
-    background-color: var(--color-input-background);
-    color: var(--color-text-light);
-    font-size: 1.1em;
-    font-family: 'Inter', sans-serif;
-    resize: vertical;
-    min-height: 100px;
-    box-sizing: border-box;
-    transition: border-color 0.2s ease;
-}
-
-.dictation-textarea:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.3);
-}
-
-.feedback-text {
-    margin-top: 15px;
-    text-align: center;
-    font-size: 1.1em;
-    font-weight: 500;
-    min-height: 25px;
-}
-
-.feedback-text.correct {
-    color: var(--color-success);
-}
-
-.feedback-text.incorrect {
-    color: var(--color-error);
-}
-
-
-/* --- Actions Section --- */
-.actions-section {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 30px;
-    margin-bottom: 20px;
-}
-
-.action-button {
-    background-color: var(--color-primary);
-    color: white;
-    border: none;
-    padding: 15px 25px;
-    border-radius: 10px;
-    font-size: 1.1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    flex-grow: 1;
-    max-width: 250px;
-}
-
-.action-button:hover {
-    background-color: var(--color-primary-dark);
-    transform: translateY(-2px);
-}
-
-.action-button.secondary {
-    background-color: var(--color-button-secondary);
-}
-
-.action-button.secondary:hover {
-    background-color: var(--color-button-secondary-hover);
-}
-
-/* --- Hint and Correct Answer Display --- */
-.hint-display, .correct-answer-display {
-    background-color: var(--color-info-background);
-    padding: 15px;
-    border-left: 5px solid var(--color-info);
-    border-radius: 8px;
+/* ==========================================
+   BLOK 9: FEEDBACK & PEMBAHASAN
+   ========================================== */
+.feedback-area {
     margin-top: 20px;
-    font-size: 1em;
-    color: var(--color-text-light);
-    line-height: 1.6;
-}
-
-.correct-answer-display strong {
-    color: var(--color-success);
-}
-
-/* --- Premium/Ad Prompt View --- */
-.premium-prompt-container {
-    max-width: 500px;
-    margin: 50px auto;
-    padding: 40px;
-    background-color: var(--color-card-background);
-    border-radius: 15px;
-    text-align: center;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-}
-
-.premium-prompt-container h2 {
-    color: var(--color-error);
-    margin-bottom: 20px;
-    font-size: 1.8em;
-}
-
-.prompt-actions button {
-    width: 100%;
-    margin-bottom: 10px;
     padding: 15px;
-    border: none;
-    border-radius: 10px;
-    font-size: 1.1em;
-    font-weight: 700;
-    cursor: pointer;
-    transition: opacity 0.2s;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    line-height: 1.5;
 }
 
-.prompt-actions .ad-button {
-    background-color: var(--color-accent);
-    color: white;
-}
+.feedback-correct { background: #d3f9d8; color: #2b8a3e; border: 1px solid #b2f2bb; }
+.feedback-wrong { background: #fff5f5; color: #c92a2a; border: 1px solid #ffa8a8; }
 
-.prompt-actions .premium-button-lg {
-    background-color: var(--color-primary);
-    color: white;
-}
-
-.prompt-actions .back-button-lg {
-    background-color: var(--color-button-secondary);
-    color: white;
-}
-
-/* --- Bottom Nav --- */
-#bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
+/* ==========================================
+   BLOK 10: NAVIGASI BAWAH (BOTTOM NAV)
+   ========================================== */
+.bottom-nav {
+    background: var(--bg-white);
+    border-top: 1px solid #eee;
     display: flex;
     justify-content: space-around;
-    background-color: var(--color-card-background);
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
-    padding: 5px 0;
+    padding: 10px 0;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    max-width: 500px; /* Penting untuk tampilan Mobile-First di Desktop */
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 1000;
 }
 
-#bottom-nav button {
-    flex: 1;
-    background: none;
-    border: none;
-    color: var(--color-text-secondary);
-    padding: 10px 0;
+.nav-item.active {
+    color: var(--primary-blue);
+    font-weight: bold;
+}
+
+.nav-item.active i {
+    transform: translateY(-5px);
+    color: var(--danger-red); /* Ikon aktif berubah jadi Merah */
+}
+
+/* Badge Level */
+.badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* Chip Kata untuk Sentence Builder */
+/* Update pada .word-chip yang sudah ada */
+.word-chip {
+    padding: 10px 18px; /* Sedikit lebih besar agar mudah ditekan di HP */
+    background: white;
+    border: 2px solid #e5e5e5;
+    border-radius: 12px; /* Kotak sedikit membulat biasanya lebih modern */
     cursor: pointer;
-    font-size: 0.8em;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    transition: color 0.2s;
+    font-weight: bold;
+    transition: all 0.1s;
+    box-shadow: 0 3px 0 #e5e5e5; /* Efek tebal di bawah */
+    margin: 5px;
+    display: inline-block;
 }
 
-#bottom-nav button i {
-    font-size: 1.4em;
+.word-chip:active {
+    transform: translateY(2px); /* Turun sedikit saat ditekan */
+    box-shadow: 0 1px 0 #e5e5e5;
 }
 
-#bottom-nav button.active {
-    color: var(--color-primary);
+.word-chip:hover {
+    background: #f0f0f0;
+    border-color: #2196F3;
 }
 
-/* --- Utility --- */
-.hidden {
-    display: none !important;
+/* Header Elegan yang Menyatu */
+.game-overlay-header {
+    background-color: var(--lingua-blue) !important; /* Gunakan !important agar tidak ditimpa */
+    color: white;
+    padding: 25px 15px;
+    text-align: center;
+    border-top: 6px solid #ff4b4b; /* Garis merah atas */
+    position: relative;
+    width: 100%;
+    border-bottom-left-radius: 30px;
+    border-bottom-right-radius: 30px;
+    box-sizing: border-box;
 }
 
-/* --- Responsive adjustments --- */
-@media (max-width: 600px) {
-    #app-header h1 {
-        font-size: 1.2em;
-    }
-    .challenge-container {
-        margin: 15px auto;
-        padding: 15px;
-    }
-    .challenge-card {
-        padding: 20px;
-    }
-    .challenge-title {
-        font-size: 1.5em;
-    }
-    .module-info {
-        font-size: 0.9em;
-    }
-    .audio-section, .actions-section {
-        flex-direction: column;
-        gap: 10px;
-    }
-    .audio-button, .action-button {
-        width: 100%;
-        max-width: none;
-    }
-    .premium-prompt-container {
-        margin: 30px 15px;
-        padding: 20px;
-    }
+/* Hilangkan padding putih yang membuat header terlihat melayang */
+#game-overlay {
+    background-color: white;
+    padding: 0 !important; /* Menghilangkan jarak putih di pinggir header */
+}
+
+.game-overlay-header {
+    background-color: #2196F3 !important; /* Biru yang sama dengan Beranda */
+    width: 100%;
+    margin: 0;
+    border-radius: 0 0 30px 30px; /* Lengkungan hanya di bawah */
+}
+
+.theory-card {
+    padding: 20px; /* Isi soal tetap punya jarak dari pinggir */
 }

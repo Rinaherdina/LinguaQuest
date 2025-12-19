@@ -1,246 +1,232 @@
-// scripts/story_logic.js
+/**
+ * LINGUAQUEST - STORY & READING ENGINE (REVISI V2.2)
+ * Terintegrasi dengan VOCAB_MASTER & userState.currentLevel
+ */
 
-// --- PERUBAHAN: Import STORY_MODE_DATA multi-chapter dan GAMIFICATION_CONFIG
-import { STORY_MODE_DATA, GAMIFICATION_CONFIG } from './data.js'; 
-
-// State global untuk melacak posisi cerita
-let currentChapterId = STORY_MODE_DATA[0].id; // Default ke Chapter 1
-let currentStoryStepIndex = 0; 
-let currentChapterData = STORY_MODE_DATA[0].steps; // Data langkah Chapter 1
-
-// ====================================================================
-// --- A. UTAMA RENDERER DAN CONTROLLER ---
-// ====================================================================
+let storyBank = []; 
+let currentStoryData = null; 
+let storyScore = 0;
+let currentQuestionIndex = 0;
 
 /**
- * Mereset indeks cerita dan memulai cerita dari awal (Dipanggil dari main.js).
- * @param {number} [chapterId] - ID Chapter yang akan dimuat (default ke Chapter pertama).
+ * BLOK 1: SINKRONISASI DATA (CLOUD)
  */
-function renderStoryMode(chapterId) {
-    // Jika tidak ada ID yang diberikan, gunakan default/saat ini
-    const targetChapter = chapterId ? STORY_MODE_DATA.find(c => c.id === chapterId) : STORY_MODE_DATA[0];
-    
-    if (!targetChapter) {
-        document.getElementById('story-content').innerHTML = `<p class="feedback-wrong">Chapter tidak ditemukan.</p>`;
-        return;
-    }
-    
-    // Update State Global
-    currentChapterId = targetChapter.id;
-    currentChapterData = targetChapter.steps;
-    currentStoryStepIndex = 0;
+async function syncStoryData() {
+    try {
+        console.log("Memulai sinkronisasi Reading dari Cloud...");
+        // READING_URL harus sudah didefinisikan di config atau file lain
+        const response = await fetch(READING_URL); 
+        
+        if (!response.ok) throw new Error("Gagal akses Sheets.");
+        
+        const csvText = await response.text();
+        const lines = csvText.split('\n');
+        
+        const updatedBank = [];
+        for (let i = 1; i < lines.length; i++) {
+            if (!lines[i].trim()) continue;
+            const cols = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
 
-    // Cek IAP Wall di level Chapter (Jika chapter terkunci)
-    if (!targetChapter.gratis && !window.userIsPremium) {
-        renderIapWall(targetChapter.title);
-        return;
+            if (cols.length >= 9) {
+                updatedBank.push({
+                    level: parseInt(cols[0]) || 1, 
+                    title: cols[1], 
+                    content: cols[2], 
+                    question: cols[3], 
+                    options: [cols[4], cols[5], cols[6], cols[7]], 
+                    correct: parseInt(cols[8]) || 0, 
+                    explanation: cols[9] || "" 
+                });
+            }
+        }
+        storyBank = updatedBank;
+        console.log("✅ Reading Bank Ready: " + storyBank.length + " rows.");
+    } catch (e) {
+        console.error("❌ Gagal Sinkronisasi Reading:", e.message);
     }
-
-    loadCurrentStoryStep();
 }
 
 /**
- * Memuat dan merender langkah cerita saat ini.
+ * BLOK 2: KONTROL PERMAINAN
  */
-function loadCurrentStoryStep() {
-    // Diasumsikan 'story-content' ada di template yang dimuat oleh loadView('story') di main.js
-    const storyContentDiv = document.getElementById('story-content');
-    if (!storyContentDiv) return;
+async function startStoryMode() {
+    if (storyBank.length === 0) {
+        await syncStoryData();
+    }
 
-    // Ambil data langkah cerita saat ini dari Chapter yang aktif
-    const step = currentChapterData[currentStoryStepIndex];
+    // PENYESUAIAN: Ambil angka level dari userState.currentLevel (1, 2, 3...)
+    const levelNum = window.userState ? window.userState.currentLevel : 1;
+    
+    const questionsForLevel = storyBank.filter(s => s.level === levelNum);
 
-    if (!step) {
-        // Akhir dari Chapter saat ini
-        renderChapterComplete();
+    if (questionsForLevel.length === 0) {
+        alert(`Maaf, Cerita untuk Level ${levelNum} belum tersedia.`);
         return;
     }
 
-    let html = '';
-    
-    // --- Rendering Berdasarkan Tipe Langkah ---
-    
-    // 1. Tipe: TEXT (Narasi/Dialog)
-    if (step.type === 'TEXT') {
-        html = `
-            <div class="story-step-text">
-                <h3>${step.speaker}</h3>
-                <div class="story-text">"${step.text}"</div>
-            </div>
-            <button class="btn-next" onclick="window.nextStoryStep(${step.nextId})">
-                Lanjut ➡️
-            </button>
-        `;
-    
-    // 2. Tipe: TENSES_CHECK_EXERCISE (Soal Interaktif)
-    } else if (step.type === 'TENSES_CHECK_EXERCISE') {
-        // Asumsi: step.correctAnswer, step.nextId, step.tensesId, step.sentencePart, step.hint
-        html = `
-            <div class="section-card story-exercise">
-                <h2>Cek Bahasa</h2>
-                <h3>${step.tensesId.toUpperCase().replace('_', ' ')} Challenge</h3>
-                <p>Isi bagian yang kosong untuk melanjutkan cerita:</p>
-                
-                <div class="target-sentence">
-                    ${step.sentencePart.replace('___', '<input type="text" id="tenses-answer" placeholder="..." style="width: 120px; display: inline-block;">')}
-                </div>
-                
-                <p class="demo-note">Petunjuk: ${step.hint}</p>
-                
-                <button class="primary-btn" onclick="window.checkTensesExercise('${step.correctAnswer}', ${step.nextId})">
-                    Cek Jawaban
-                </button>
-                <div id="story-feedback" class="feedback-area"></div>
-            </div>
-        `;
+    const randomStoryTitle = questionsForLevel[0].title;
+    const sameStoryQuestions = questionsForLevel.filter(q => q.title === randomStoryTitle);
 
-    // 3. Tipe: IAP_WALL (Demo Selesai / Pagar Premium)
-    } else if (step.type === 'IAP_WALL' && !window.userIsPremium) {
-        renderIapWall(STORY_MODE_DATA.find(c => c.id === currentChapterId).title || "Chapter Ini");
-        return;
-    
-    // Jika IAP_WALL tetapi user Premium, kita skip langkah ini dan langsung ke nextId jika ada
-    } else if (step.type === 'IAP_WALL' && window.userIsPremium) {
-        nextStoryStep(step.nextId);
-        return;
+    currentStoryData = {
+        title: randomStoryTitle,
+        content: highlightVocab(sameStoryQuestions[0].content), // Fitur Highlight Otomatis
+        questions: sameStoryQuestions 
+    };
 
-    } else {
-        html = `
-            <div class="story-box">
-                <p>Tipe langkah cerita tidak dikenali: ${step.type}</p>
-                <button class="primary-btn" onclick="window.loadView('home')">Kembali ke Beranda</button>
-            </div>
-        `;
-    }
-
-    storyContentDiv.innerHTML = html;
+    storyScore = 0;
+    currentQuestionIndex = 0;
+    renderReadingPhase();
 }
 
 /**
- * Merender halaman IAP Wall yang terpisah.
+ * HELPER: Highlight Kata yang ada di daftar kosakata level saat ini
  */
-function renderIapWall(chapterTitle) {
-    const storyContentDiv = document.getElementById('story-content');
-    storyContentDiv.innerHTML = `
-        <div class="card iap-wall-story">
-            <h2>🔒 ${chapterTitle} Terkunci</h2>
-            <p>Kamu berhasil melewati gerbang! Untuk melanjutkan petualangan epik ke Chapter selanjutnya, kamu memerlukan LinguaQuest Premium.</p>
-            <button class="btn-premium" onclick="window.navigateToSubscription()">
-                Dapatkan Premium Sekarang!
-            </button>
-            <button class="secondary-btn" onclick="window.loadView('home')">
-                Kembali ke Beranda
+function highlightVocab(text) {
+    if (!window.VOCAB_MASTER) return text;
+    const levelKey = "LV" + window.userState.currentLevel;
+    const currentVocab = window.VOCAB_MASTER[levelKey] || [];
+    
+    let highlightedText = text;
+    currentVocab.forEach(item => {
+        // Regex untuk mencari kata yang sama persis (case insensitive)
+        const regex = new RegExp(`\\b${item.word}\\b`, 'gi');
+        highlightedText = highlightedText.replace(regex, `<span style="color:#4f46e5; font-weight:bold; border-bottom:2px solid #c7d2fe;">$&</span>`);
+    });
+    return highlightedText;
+}
+
+/**
+ * BLOK 3: TAMPILAN UI
+ */
+function renderReadingPhase() {
+    const levelDisplay = window.userState.currentLevel;
+    
+    // Memanggil fungsi dari main.js untuk membuka overlay
+    openGameOverlay(`
+        <div class="theory-card" style="max-height: 80vh; overflow-y: auto;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
+                <span class="badge" style="background:#f5f3ff; color:#7c3aed; padding:5px 10px; border-radius:5px; font-size:0.8rem; font-weight:bold;">
+                    📚 READING LEVEL ${levelDisplay}
+                </span>
+                <button onclick="closeGame()" style="background:none; border:none; font-size:1.5rem; cursor:pointer">&times;</button>
+            </div>
+        
+            <h2 style="color:#1e293b; margin-bottom:10px;">${currentStoryData.title}</h2>
+            <hr style="border:0; border-top:1px solid #eee; margin-bottom:15px;">
+          
+            <div class="story-text-content" style="font-size: 1.1rem; line-height: 1.8; color: #334155; text-align: justify; margin-bottom: 25px; white-space: pre-line;">
+                ${currentStoryData.content}
+            </div>
+
+            <div style="background: #f0f9ff; padding: 15px; border-radius: 10px; border-left: 5px solid #0ea5e9; margin-bottom: 20px;">
+                <small style="color:#0369a1;"><strong>Tips:</strong> Kata yang berwarna biru adalah kosakata target level ini!</small>
+            </div>
+            <button class="btn-upgrade btn-premium" style="width:100%" onclick="startStoryQuiz()">
+                MULAI KUIS (+20 XP)
             </button>
         </div>
-    `;
+    `);
 }
 
-/**
- * Merender halaman penyelesaian Chapter.
- */
-function renderChapterComplete() {
-    const storyContentDiv = document.getElementById('story-content');
+function startStoryQuiz() {
+    renderQuizQuestion();
+}
+
+function renderQuizQuestion() {
+    const q = currentStoryData.questions[currentQuestionIndex];
+    const progress = (currentQuestionIndex / currentStoryData.questions.length) * 100;
+
+    openGameOverlay(`
+        <div class="theory-card">
+            <div class="progress-container" style="margin-bottom: 20px; background:#eee; border-radius:10px; height:8px;">
+                <div id="progress-fill" style="width: ${progress}%; height: 100%; background: #4f46e5; border-radius: 10px; transition: 0.4s;"></div>
+            </div>
+
+            <p style="font-size: 0.8rem; color: #64748b; margin-bottom:5px; font-weight:bold;">PERTANYAAN ${currentQuestionIndex + 1} / ${currentStoryData.questions.length}</p>
+            <h3 style="margin-bottom: 20px; line-height: 1.4; color:#1e293b;">${q.question}</h3>
+
+            <div id="quiz-options" style="display: flex; flex-direction: column; gap: 12px;">
+                ${q.options.map((opt, i) => `
+                    <button class="sub-card" style="text-align: left; padding: 15px; cursor: pointer; border: 2px solid #e2e8f0; background: white; border-radius:12px; transition:0.2s;" onclick="checkStoryAnswer(${i})">
+                        <strong style="margin-right:10px; color:#4f46e5">${String.fromCharCode(65 + i)}.</strong> ${opt}
+                    </button>
+                `).join('')}
+            </div>
+           
+            <div id="quiz-feedback" style="margin-top: 20px; display: none; padding: 15px; border-radius: 12px; font-size:0.95rem; line-height:1.5"></div>
+        </div>
+    `);
+}
+
+function checkStoryAnswer(selectedIndex) {
+    const q = currentStoryData.questions[currentQuestionIndex];
+    const feedbackDiv = document.getElementById('quiz-feedback');
+    const optionsDiv = document.getElementById('quiz-options');
+    const buttons = optionsDiv.querySelectorAll('button');
+
+    buttons.forEach(btn => btn.disabled = true);
+
+    if (selectedIndex === q.correct) {
+        storyScore++;
+        feedbackDiv.style.display = 'block';
+        feedbackDiv.style.background = '#f0fdf4';
+        feedbackDiv.style.color = '#166534';
+        feedbackDiv.style.border = '1px solid #bbf7d0';
+        feedbackDiv.innerHTML = `<strong>✨ Benar!</strong><br>${q.explanation}`;
+        buttons[selectedIndex].style.borderColor = '#22c55e';
+        buttons[selectedIndex].style.background = '#f0fdf4';
+    } else {
+        feedbackDiv.style.display = 'block';
+        feedbackDiv.style.background = '#fef2f2';
+        feedbackDiv.style.color = '#991b1b';
+        feedbackDiv.style.border = '1px solid #fecaca';
+        feedbackDiv.innerHTML = `<strong>❌ Kurang Tepat</strong><br>${q.explanation}`;
+        buttons[selectedIndex].style.borderColor = '#ef4444';
+        buttons[q.correct].style.borderColor = '#22c55e'; 
+    }
+
+    const nextBtn = document.createElement('button');
+    nextBtn.className = "btn-upgrade btn-premium";
+    nextBtn.style.marginTop = "20px";
+    nextBtn.style.width = "100%";
+    nextBtn.innerText = currentQuestionIndex < currentStoryData.questions.length - 1 ? "Lanjut ke Soal Berikutnya" : "Lihat Skor Akhir";
     
-    // Tentukan ID Chapter berikutnya
-    const currentChapterIndex = STORY_MODE_DATA.findIndex(c => c.id === currentChapterId);
-    const nextChapter = STORY_MODE_DATA[currentChapterIndex + 1];
-
-    // Tambahkan XP saat Chapter Selesai
-    const xpReward = GAMIFICATION_CONFIG.XP_PER_STORY_COMPLETION || 50;
-    window.addXP(xpReward);
-
-    const nextChapterButton = nextChapter ? 
-        `<button class="primary-btn" onclick="window.renderStoryMode(${nextChapter.id})">Lanjut ke ${nextChapter.title}</button>` :
-        `<button class="primary-btn" onclick="window.loadView('home')">Kembali ke Lesson Path</button>`;
-
-    storyContentDiv.innerHTML = `
-        <h2>🎉 Chapter ${currentChapterId} Selesai! (+${xpReward} XP)</h2>
-        <p>Anda mendapatkan <strong>${xpReward} XP</strong> dan sukses menyelesaikan misi ini. XP Anda saat ini adalah ${window.userState.xp}.</p>
-        
-        ${nextChapterButton}
-        <button class="secondary-btn" onclick="window.loadView('learn')">Lanjut ke Arena Latihan</button>
-    `;
-
-    currentStoryStepIndex = 0; 
+    nextBtn.onclick = () => {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < currentStoryData.questions.length) {
+            renderQuizQuestion();
+        } else {
+            finishStoryMode();
+        }
+    };
+    feedbackDiv.appendChild(nextBtn);
 }
 
-
-// ====================================================================
-// --- B. LOGIKA INTERAKSI ---
-// ====================================================================
-
-/**
- * Mencari index langkah berdasarkan ID dalam Chapter yang sedang aktif.
- * @param {number} stepId - ID langkah cerita yang dicari.
- * @returns {number} Index langkah cerita, atau -1 jika tidak ditemukan.
- */
-function findStepIndexById(stepId) {
-    return currentChapterData.findIndex(step => step.id === stepId);
-}
-
-/**
- * Navigasi ke langkah cerita berikutnya menggunakan ID langkah (bukan indeks array).
- * @param {number} nextId - ID langkah cerita berikutnya (dari data.js).
- */
-function nextStoryStep(nextId) {
-    const nextIndex = findStepIndexById(nextId);
-
-    if (nextIndex !== -1) {
-        currentStoryStepIndex = nextIndex;
-        loadCurrentStoryStep();
-    } else {
-        // Jika nextId tidak ditemukan, asumsikan ini adalah akhir chapter
-        renderChapterComplete();
-    }
-}
-
-/**
- * Memeriksa jawaban Tenses Exercise dalam Story Mode.
- * @param {string} targetAnswer - Jawaban yang benar.
- * @param {number} nextId - ID langkah cerita berikutnya jika benar.
- */
-function checkTensesExercise(targetAnswer, nextId) {
-    const userInput = document.getElementById('tenses-answer').value;
-    const feedbackDiv = document.getElementById('story-feedback');
-    const xpReward = GAMIFICATION_CONFIG.XP_PER_CORRECT_ANSWER || 10; // XP per jawaban benar
-
-    if (!userInput.trim()) {
-        feedbackDiv.innerHTML = `<span class="feedback-wrong">⚠️ Masukkan jawaban terlebih dahulu!</span>`;
-        return;
+function finishStoryMode() {
+    const totalXP = storyScore * 20; // Hadiah lebih besar untuk Reading
+    if (typeof window.userState.points !== 'undefined') {
+        window.userState.points += totalXP;
     }
 
-    // Normalisasi: trim dan lowercase untuk perbandingan yang fleksibel
-    const normalizedTarget = targetAnswer.toLowerCase().trim();
-    const normalizedUser = userInput.toLowerCase().trim();
+    openGameOverlay(`
+        <div class="theory-card" style="text-align: center; padding: 40px 20px;">
+            <div style="font-size: 5rem; margin-bottom: 10px;">🏆</div>
+            <h2 style="color:#1e293b">Story Challenge Selesai!</h2>
+            <p style="font-size: 1.1rem; color:#64748b; margin-bottom: 25px;">
+                Anda menjawab benar <strong>${storyScore}</strong> dari ${currentStoryData.questions.length} soal.
+            </p>
+          
+            <div style="background: #fffbeb; padding: 20px; border-radius: 15px; margin-bottom: 30px; border: 1px dashed #fcd34d;">
+                <span style="display:block; font-size:0.9rem; color:#92400e">HADIAH XP</span>
+                <span style="font-size: 2rem; font-weight: bold; color: #d97706;">+${totalXP} XP</span>
+            </div>
 
-    if (normalizedUser === normalizedTarget) {
-        // --- BARU: Tambahkan XP ---
-        window.addXP(xpReward);
-        
-        feedbackDiv.innerHTML = `<span class="feedback-correct">✅ Tepat! Kata sandi (tenses) diterima. Anda mendapatkan +${xpReward} XP!</span>`;
-        
-        // Nonaktifkan tombol untuk mencegah klik ganda
-        document.querySelector('.primary-btn').disabled = true;
-        document.getElementById('tenses-answer').disabled = true;
-
-        // Lanjutkan ke langkah berikutnya setelah jeda
-        setTimeout(() => {
-            nextStoryStep(nextId);
-        }, 1500);
-    } else {
-        feedbackDiv.innerHTML = `<span class="feedback-wrong">❌ Jawaban salah. Coba periksa petunjuk di bawah!</span>`;
-    }
+            <button class="btn-upgrade btn-premium" style="width:100%; padding:15px;" onclick="closeGame()">
+                KEMBALI KE MENU
+            </button>
+        </div>
+    `);
+    
+    // Update UI jika fungsi tersedia
+    if (typeof updateUI === 'function') updateUI();
 }
-
-
-// ====================================================================
-// --- C. EXPORT KE MODUL LAIN (main.js) ---
-// ====================================================================
-
-// Mengekspor semua fungsi yang akan diakses oleh main.js/HTML
-export { 
-    renderStoryMode, // Diperbarui untuk bisa menerima chapterId
-    nextStoryStep,
-    checkTensesExercise 
-    // loadCurrentStoryStep tidak perlu diekspor karena hanya dipanggil internal
-};
