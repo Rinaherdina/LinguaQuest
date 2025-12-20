@@ -33,7 +33,7 @@ window.userState = window.userState || {
     // LAPORAN PENCAPAIAN (Untuk Profil)
     stats: {
         sentenceBuilder: { totalDone: 0, correct: 0, dailyLimit: 5, doneToday: 0 },
-        idioms: { totalDone: 0, dailyLimit: 3, doneToday: 0 },
+        idioms: { totalDone: 0, dailyLimit: 1, doneToday: 0 },
         dictation: { totalDone: 0, dailyLimit: 5, doneToday: 0 },
         tenses: { totalDone: 0, dailyLimit: 5, doneToday: 0 },
         speaking: { doneToday: 0, dailyLimit: 5 }
@@ -50,31 +50,36 @@ window.SENTENCE_BUILDER_EXERCISES = window.SENTENCE_BUILDER_EXERCISES || [];
 var curriculumMetadata = {
     1: { 
         title: "THE NEWBIE", 
-        desc: "Dasar-dasar kalimat harian & Present Tense.", 
+        desc: "Dasar-dasar kalimat harian & Present Tense.",
+        xpToExam: 1000, 
         color: "#4CAF50", 
         icon: "fa-seedling" 
     },
     2: { 
         title: "THE VOYAGER", 
         desc: "Menceritakan masa lalu dan pengalaman.", 
+        xpToExam: 2500,
         color: "#2196F3", 
         icon: "fa-ship" 
     },
     3: { 
         title: "THE SCHOLAR", 
         desc: "Kalimat sempurna dan konteks profesional.", 
+        xpToExam: 3500,
         color: "#9C27B0", 
         icon: "fa-book-reader" 
     },
     4: { 
         title: "THE CHALLENGER", 
         desc: "Kalimat pengandaian (Conditionals) & Pasif.", 
+        xpToExam: 4500,
         color: "#FF9800", 
         icon: "fa-fire" 
     },
     5: { 
         title: "THE MASTER", 
         desc: "Konteks akademik, bisnis, dan sastra.", 
+        xpToExam: 5500,
         color: "#F44336", 
         icon: "fa-crown" 
     }
@@ -112,21 +117,24 @@ function syncSentenceBuilderData() {
     if (SENTENCE_BUILDER_EXERCISES.length === 0) return;
 
     let synced = SENTENCE_BUILDER_EXERCISES.map((soal, index) => {
-        // Otomatis naik level setiap 200 soal
-        let autoLevel = Math.floor(index / 200) + 1; 
+        // Jika soal tidak punya properti level, sistem akan menebak levelnya
+        // berdasarkan urutan (setiap 200 soal ganti level)
+        let autoLevel = soal.level || Math.floor(index / 200) + 1; 
         if (autoLevel > 5) autoLevel = 5;
 
         return {
             ...soal,
-            level: autoLevel,
+            // Jika di file data lupa kasih level, default ke level user sekarang
+            level: soal.level || window.userState.currentLevel, 
             target: soal.target || "",
+            // Mendukung kunci 'meaning' atau 'translation' agar fleksibel
             meaning: soal.meaning || soal.translation || "Arti tidak tersedia"
         };
     });
 
     SENTENCE_BUILDER_EXERCISES.length = 0;
     SENTENCE_BUILDER_EXERCISES.push(...synced);
-    console.log("✅ Sentence Builder Sync: " + SENTENCE_BUILDER_EXERCISES.length + " soal terproses.");
+    console.log("✅ SB Sync: " + SENTENCE_BUILDER_EXERCISES.length + " soal siap.");
 }
 
 // Final Log

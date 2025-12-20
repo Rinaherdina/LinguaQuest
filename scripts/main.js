@@ -45,21 +45,40 @@ window.dictationBank = [];
 // 3. INITIALIZATION & SYNC
 // ==========================================
 window.onload = async () => {
-    loadUserData();
-    checkDailyReset();
-    updateStreak();
+    console.log("Memulai Sinkronisasi LinguaQuest...");
+
+    // 1. DATA CORE: Load data user agar variabel window.userState tersedia
+    loadUserData(); 
     
-    if (typeof initArenaLogic === 'function') {
-        initArenaLogic();
-        window.openLevelMenu = openLevelMenu;
+    // 2. DAILY LOGIC: Cek reset harian dan perbarui Streak (Penting untuk retensi user)
+    checkDailyReset();
+    if (typeof updateStreak === 'function') {
+        updateStreak(); 
     }
 
+    // 3. DATA SYNC: Memberi label level pada soal agar filter Level 1-5 berfungsi
+    // Cukup dipanggil sekali saja di sini
     if (typeof syncSentenceBuilderData === 'function') {
         syncSentenceBuilderData();
     }
 
-    updateUI();
-    await syncDictationData();
+    // 4. DICTATION SYNC: Memuat data dikte secara asinkron
+    if (typeof syncDictationData === 'function') {
+        await syncDictationData();
+    }
+
+    // 5. ARENA ENGINE: Menggambar peta & mengatur gembok level berdasarkan userState
+    if (typeof initArenaLogic === 'function') {
+        initArenaLogic();
+    }
+
+    // 6. UI UPDATE: Memperbarui semua tampilan (XP, Nyawa, Nama, dsb)
+    // Pastikan fungsi updateUI() Anda mencakup updateProfileUI()
+    if (typeof updateUI === 'function') {
+        updateUI();
+    }
+    
+    console.log("LinguaQuest Ready: User Level " + window.userState.currentLevel);
 };
 
 async function syncDictationData() {
@@ -147,92 +166,172 @@ function updateUI() {
 }
 
 // ==========================================
-// 5. IDIOM GAME LOGIC
+// 5. IDIOM GAME LOGIC & COLLECTION
 // ==========================================
 function openIdiomPage() {
-    const source = (typeof IDIOM_DATA !== 'undefined' && IDIOM_DATA.length > 0) ? IDIOM_DATA : (window.dictionaryData || []);
-    
-    if (!source || source.length === 0) {
-        return alert("Data Idiom tidak ditemukan!");
-    }
+    const source = window.dictionaryData || [];
+    if (source.length === 0) return alert("Data Idiom belum dimuat!");
 
-    const current = source[Math.floor(Math.random() * source.length)];
+    const today = new Date().toDateString();
     
-    // Save to state if not collected
-    if (!userState.collectedIdioms.includes(current.target)) {
-        userState.collectedIdioms.push(current.target);
+    // 1. Logika Sinkronisasi Harian: Cek apakah hari sudah berganti
+    if (userState.lastIdiomDate !== today) {
+        const randomIdiom = source[Math.floor(Math.random() * source.length)];
+        userState.todayIdiom = randomIdiom;
+        userState.lastIdiomDate = today;
+        userState.stats.idioms.doneToday = 0; // Reset status klaim XP harian
         saveUserData();
     }
 
+    const current = userState.todayIdiom;
+
+    // 2. Simpan ke koleksi profil jika belum ada
+    if (!userState.collectedIdioms.includes(current.id)) {
+        userState.collectedIdioms.push(current.id);
+        saveUserData();
+        // Langsung perbarui tampilan profil jika sedang terbuka
+        renderIdiomCollection(); 
+    }
+
+    // 3. Tampilkan Overlay UI
     openGameOverlay(`
         <div class="theory-card" style="text-align:center">
-            <h3 style="margin-top:20px;">Idiom Hari Ini</h3>
-            <h1 style="color:#2196F3; margin:15px 0;">${current.target}</h1>
-            <div style="background:#f0f7ff; padding:15px; border-radius:10px; margin-bottom:15px;">
-                <p><strong>Arti:</strong> ${current.meaning}</p>
+            <h3 style="margin-top:20px; color: #666;">Idiom Hari Ini</h3>
+            <h1 style="color:#2196F3; margin:15px 0; font-size: 2rem;">${current.target}</h1>
+            
+            <div style="background:#f0f7ff; padding:20px; border-radius:15px; margin-bottom:15px; border-left: 5px solid #2196F3;">
+                <p style="font-size: 1.1rem;"><strong>Arti:</strong> ${current.meaning}</p>
             </div>
-            <div style="margin-top:20px; text-align:left; background:#fff8e1; padding:15px; border-radius:10px;">
+
+            <div id="idiom-ch-container" style="margin-top:20px; text-align:left; background:#fff8e1; padding:15px; border-radius:10px; border: 1px dashed #ffd54f;">
                 <label style="font-weight:bold;">⚡ Challenge (+5 XP):</label>
-                <input type="text" id="idiom-challenge-input" placeholder="Tulis kalimatmu..." style="width:100%; padding:10px; margin-top:10px; border: 1px solid #ddd; border-radius: 8px;">
-                <button onclick="claimChallengeXP()" class="btn-upgrade btn-secondary" style="width:100%; margin-top:10px;">KIRIM</button>
+                ${userState.stats.idioms.doneToday > 0 
+                    ? `<p style="color:#2e7d32; margin-top:10px; font-weight:bold;">✅ Kalimat sudah dikirim hari ini!</p>`
+                    : `<p style="font-size: 0.8rem; color: #856404;">Buat kalimat menggunakan idiom di atas!</p>
+                       <input type="text" id="idiom-challenge-input" placeholder="Tulis kalimatmu..." 
+                              style="width:100%; padding:12px; margin-top:10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box;">
+                       <button id="btn-claim-idiom" onclick="claimChallengeXP()" class="btn-upgrade btn-secondary" style="width:100%; margin-top:10px;">KIRIM & KLAIM XP</button>`
+                }
             </div>
             <button class="btn-upgrade btn-premium" style="width:100%; margin-top:20px" onclick="closeGame()">TUTUP</button>
         </div>
     `, "IDIOM EXPLORER");
 }
 
+/**
+ * Menambah XP dari tantangan menulis kalimat
+ */
 function claimChallengeXP() {
     const input = document.getElementById('idiom-challenge-input');
-    if (input && input.value.length > 5) {
+    if (input && input.value.trim().length > 5) {
         addXP(5);
-        playSuccessSound();
-        alert("🌟 +5 XP!");
-        input.disabled = true;
+        if (typeof playSuccessSound === 'function') playSuccessSound();
+        
+        userState.stats.idioms.doneToday = 1; // Tandai sudah klaim hari ini
+        userState.stats.idioms.totalDone += 1;
+        saveUserData();
+
+        const container = document.getElementById('idiom-ch-container');
+        container.innerHTML = `<p style="color:#2e7d32; font-weight:bold; text-align:center; padding:10px;">🌟 +5 XP Berhasil diklaim!</p>`;
+    } else {
+        alert("Tulis kalimat yang lebih panjang (minimal 6 karakter).");
     }
 }
 
-function playSuccessSound() {
-    const audio = new Audio('https://www.soundjay.com/buttons/sounds/button-37.mp3'); 
-    audio.play().catch(e => console.log("Audio play blocked"));
+/**
+ * Menampilkan koleksi idiom di grid profil
+ */
+function renderIdiomCollection() {
+    const listArea = document.getElementById('idiom-collection-list');
+    if (!listArea) return;
+
+    // Ambil 9 koleksi terbaru
+    const latestIds = [...(userState.collectedIdioms || [])].reverse().slice(0, 9);
+    
+    if (latestIds.length === 0) {
+        listArea.innerHTML = `<p style="font-size:12px; color:#999; text-align:center;">Belum ada idiom yang dipelajari.</p>`;
+        return;
+    }
+
+    listArea.innerHTML = `
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:5px;">
+            ${latestIds.map(id => {
+                // Cari data lengkap idiom berdasarkan ID-nya
+                const item = window.dictionaryData.find(d => d.id === id);
+                const title = item ? item.target : "Unknown";
+                return `
+                    <div title="${title}" style="background:white; padding:8px 4px; font-size:10px; border:1px solid #eee; text-align:center; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.05); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        ${title}
+                    </div>`;
+            }).join('')}
+        </div>`;
 }
 
 // ==========================================
-// 6. SENTENCE BUILDER
+// 6. SENTENCE BUILDER (MODULAR & LIVES SYNC)
 // ==========================================
 function startSentenceBuilder() {
+    // 1. Validasi Akses (Limit harian & Nyawa)
     if (!canPlayModule('sentenceBuilder')) return;
 
     const source = typeof SENTENCE_BUILDER_EXERCISES !== 'undefined' ? SENTENCE_BUILDER_EXERCISES : [];
+    
+    // 2. Filter soal berdasarkan level user saat ini
     const available = source.filter(s => parseInt(s.level) === (userState.currentLevel || 1));
     
-    if (available.length === 0) return alert("Soal tidak ditemukan.");
+    if (available.length === 0) {
+        return alert(`Soal untuk Level ${userState.currentLevel} sedang disiapkan!`);
+    }
     
+    // 3. Ambil soal acak
     const data = available[Math.floor(Math.random() * available.length)];
-    const words = data.target.split(' ');
+    
+    // 4. Pecah kalimat menjadi potongan kata (Chips)
+    const words = data.target.trim().split(/\s+/);
     const shuffledWords = [...words].sort(() => Math.random() - 0.5);
 
     const htmlContent = `
         <div class="theory-card" style="text-align:center;">
-            <p style="margin-bottom: 10px; color: #666;">Artinya:</p>
-            <h3 style="color: #333; margin-bottom: 20px;">"${data.meaning || 'Arti tidak tersedia'}"</h3>
-            <div id="sb-target-area" style="min-height:80px; border-bottom:2px solid #2196F3; margin:20px 0; display:flex; gap:8px; flex-wrap:wrap; justify-content:center; padding:10px; background: #f0f8ff; border-radius: 10px;"></div>
-            <div id="sb-word-pool" style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center; background:#f9f9f9; padding:20px; border-radius:15px; border:2px dashed #ddd; min-height: 100px;"></div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <span style="font-size:0.8rem; color:#666;">Progress: ${userState.stats.sentenceBuilder.doneToday}/5</span>
+                <span style="font-size:0.8rem; color:#f44336;"><i class="fas fa-heart"></i> ${userState.isPremium ? '∞' : userState.lives}</span>
+            </div>
+            <p style="margin-bottom: 5px; color: #666;">Susun kalimat ini:</p>
+            <h3 style="color: #333; margin-bottom: 20px; font-style:italic;">"${data.meaning || 'Arti tidak tersedia'}"</h3>
+            
+            <div id="sb-target-area" style="min-height:100px; border-bottom:3px solid #2196F3; margin:20px 0; display:flex; gap:8px; flex-wrap:wrap; justify-content:center; padding:15px; background: #f0f8ff; border-radius: 15px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);"></div>
+            
+            <div id="sb-word-pool" style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center; background:#fff; padding:20px; border-radius:15px; border:2px dashed #cbd5e0; min-height: 120px;"></div>
+            
             <button id="btn-check-sb" class="btn-upgrade btn-premium" style="width:100%; margin-top:25px" 
                 onclick="checkSentence('${data.target.replace(/'/g, "\\'")}')">PERIKSA JAWABAN</button>
+            
             <div id="sb-feedback" style="margin-top: 20px; padding: 15px; border-radius: 12px; display: none; font-weight: bold;"></div>
         </div>
     `;
 
-    openGameOverlay(htmlContent, "SENTENCE BUILDER");
+    openGameOverlay(htmlContent, "SENTENCE BUILDER LV " + userState.currentLevel);
 
+    // Render Words as Chips
     const pool = document.getElementById('sb-word-pool');
     shuffledWords.forEach(word => {
         const btn = document.createElement('button');
         btn.innerText = word;
-        btn.className = 'word-chip';
+        btn.className = 'word-chip'; // Pastikan CSS word-chip ada di style.css
         btn.onclick = () => moveWord(btn);
         pool.appendChild(btn);
     });
+}
+
+function moveWord(btn) {
+    const target = document.getElementById('sb-target-area');
+    const pool = document.getElementById('sb-word-pool');
+    // Toggle posisi: Jika di pool pindah ke target, dan sebaliknya
+    if (btn.parentElement.id === 'sb-word-pool') {
+        target.appendChild(btn);
+    } else {
+        pool.appendChild(btn);
+    }
 }
 
 function checkSentence(correct) {
@@ -243,6 +342,7 @@ function checkSentence(correct) {
     feedbackEl.style.display = 'block';
 
     if (userWords === correct.trim()) {
+        // Logika Benar (Tetap seperti sebelumnya)
         userState.stats.sentenceBuilder.doneToday++;
         userState.points += 10;
         saveUserData();
@@ -253,15 +353,23 @@ function checkSentence(correct) {
         btnCheck.style.display = 'none';
         playSuccessSound();
     } else {
-        handleWrong();
-    }
-}
+        // PERBAIKAN: Logika Salah dengan Menampilkan Jawaban Benar
+        handleWrong(); // Mengurangi nyawa
 
-function moveWord(btn) {
-    const target = document.getElementById('sb-target-area');
-    const pool = document.getElementById('sb-word-pool');
-    if (btn.parentElement.id === 'sb-word-pool') target.appendChild(btn);
-    else pool.appendChild(btn);
+        feedbackEl.style.backgroundColor = "#ffebee";
+        feedbackEl.style.color = "#c62828";
+        
+        // Menampilkan pesan salah dan kunci jawaban
+        feedbackEl.innerHTML = `
+            ❌ Salah! Sisa nyawa: ${userState.isPremium ? '∞' : userState.lives}<br>
+            <div style="margin-top: 10px; font-weight: normal; font-size: 0.9rem; border-top: 1px solid #ffcdd2; padding-top: 10px;">
+                <span style="font-weight: bold;">Jawaban yang benar:</span><br>
+                <i style="color: #333;">"${correct}"</i>
+            </div>
+            <button onclick="startSentenceBuilder()" class="btn-upgrade" style="background:#c62828; color:white; margin-top:10px; width:100%;">COBA SOAL LAIN</button>
+        `;
+        btnCheck.style.display = 'none';
+    }
 }
 
 // ==========================================
@@ -367,6 +475,7 @@ function addXP(amount) {
     userState.points += amount;
     userState.weeklyXP = (userState.weeklyXP || 0) + amount;
     saveUserData();
+    console.log(`XP Bertambah! Total sekarang: ${userState.points}`);
 }
 
 // PERBAIKAN: Fungsi nextLevel tanpa window.gameState
@@ -431,6 +540,7 @@ function checkDailyReset() {
             userState.stats[key].doneToday = 0;
         }
         userState.idiomsOpenedToday = 0;
+        userState.vocabClaimedToday = false;
         userState.adsWatchedToday = 0;
         userState.lastActiveDate = today;
         saveUserData();
@@ -478,15 +588,6 @@ function watchAdForLife() {
     }, 3000);
 }
 
-function renderIdiomCollection() {
-    const listArea = document.getElementById('idiom-collection-list');
-    if (!listArea) return;
-    const latest = [...(userState.collectedIdioms || [])].reverse().slice(0, 9);
-    listArea.innerHTML = `<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:5px;">
-        ${latest.map(term => `<div style="background:white; padding:5px; font-size:10px; border:1px solid #ddd; text-align:center;">${term}</div>`).join('')}
-    </div>`;
-}
-
 function updateProfileUI() {
     const s = userState.stats;
     const reportArea = document.getElementById('idiom-collection-list'); 
@@ -498,6 +599,19 @@ function updateProfileUI() {
                 <div style="margin-top:10px; font-weight:bold; color:#ff9600;">Total XP: ${userState.points}</div>
             </div>
         `;
+    }
+    const pointsEl = document.getElementById('profile-xp-display');
+    if (pointsEl) {
+        // Menampilkan total XP (Contoh: 1250 XP)
+        pointsEl.innerText = `${userState.points} XP`; 
+    }
+    
+    // Progress Bar Menuju Level Berikutnya
+    const nextMeta = curriculumMetadata[userState.currentLevel];
+    if (nextMeta) {
+        const progress = Math.min((userState.points / nextMeta.xpToExam) * 100, 100);
+        const bar = document.getElementById('xp-progress-bar');
+        if (bar) bar.style.width = progress + "%";
     }
 }
 
@@ -514,6 +628,11 @@ function showPremiumWall(reason) {
 function closePremiumWall() {
     const modal = document.getElementById('premium-modal');
     if (modal) modal.style.display = 'none';
+}
+
+function playSuccessSound() {
+    const audio = new Audio('https://www.soundjay.com/buttons/sounds/button-37.mp3'); 
+    audio.play().catch(e => console.log("Audio play blocked"));
 }
 
 // ==========================================
@@ -638,35 +757,6 @@ function playVocabAudio(text) {
     // ==========================================
 // 11. ADDITIONAL UTILITIES & ACCESS CONTROL
 // ==========================================
-
-/**
- * Membuka halaman Idiom (sama dengan renderRandomIdiom tapi versi sederhana)
- */
-function openIdiomPage() {
-    const source = typeof IDIOM_DATA !== 'undefined' ? IDIOM_DATA : (window.dictionaryData || []);
-    if (source.length === 0) return alert("Data Idiom tidak ditemukan!");
-
-    // Ambil data acak
-    const current = source[Math.floor(Math.random() * source.length)];
-    
-    // Simpan ke state agar bisa diakses fungsi lain jika perlu
-    userState.todayIdiom = current;
-
-    openGameOverlay(`
-        <div class="theory-card" style="text-align:center">
-            <h3 style="margin-top:20px;">Idiom Hari Ini</h3>
-            <h1 style="color:#2196F3; margin:15px 0;">${current.target}</h1>
-            <div style="background:#f0f7ff; padding:15px; border-radius:10px; margin-bottom:15px;">
-                <p><strong>Arti:</strong> ${current.meaning}</p>
-            </div>
-            <button class="btn-upgrade btn-premium" style="width:100%;" onclick="closeGame()">TUTUP</button>
-        </div>
-    `, "IDIOM EXPLORER");
-}
-
-/**
- * Kontrol akses fitur premium
- */
 function checkPremiumAccess(actionType) {
     if (userState.isPremium) return true; 
 
@@ -699,16 +789,3 @@ function isValidEnglishWord(word) {
     return vocabList.some(entry => entry.word.toLowerCase() === cleanWord);
 }
 
-/**
- * Menjalankan suara untuk kosakata tunggal
- */
-function playVocabAudio(text) {
-    if (!text) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    utterance.rate = 0.9;
-    window.speechSynthesis.speak(utterance);
-}
-
- 

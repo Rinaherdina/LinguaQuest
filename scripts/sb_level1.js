@@ -2,7 +2,7 @@
 
 // Konstanta untuk Sentence Builder
 const TYPE_SB = 'SENTENCE_BUILDER';
-SENTENCE_BUILDER_EXERCISES = [
+SENTENCE_BUILDER_EXERCISES.push(
 
     {
         id: 'sb_1',
@@ -6183,4 +6183,4 @@ SENTENCE_BUILDER_EXERCISES = [
         target: "Although it was raining, we enjoyed the picnic.",
         gratis: false 
     },
-];
+);
