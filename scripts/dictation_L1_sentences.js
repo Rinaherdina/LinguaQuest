@@ -1,6 +1,6 @@
 // scripts/dictation_L1_sentences.js
 
-const DICTATION_L1_SENTENCES = [
+window.DICTATION_L1_SENTENCES = [
    [
   ["d_L1_001","A1_ID","m1_simple_pres","Simple Present","He teaches math at the local high school.","Dia mengajar matematika di sekolah menengah setempat."  ],
   ["d_L1_002","A1_ID","m1_simple_pres","Simple Present","I often forget where I put my glasses.","Saya sering lupa di mana saya meletakkan kacamata saya."  ],

@@ -37,8 +37,6 @@ let userState = window.userState || {
 };
 
 const READING_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQMm5ZPDIt2jlcIwKSL7yUDqUJ27U1KvDpi1uXeydUws3YogJcNNkBSMDE74gXE9n_JofDbNTHoVoYa/pub?output=csv";
-const DICT_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vScYr7mvqndccYlbRN3BTEtuaqhgSrciwNJbLxA7ck9lciyOflk8S17aXh6b7sHMsd02TWU6abVH-jZ/pub?output=csv";
-
 window.dictationBank = [];
 
 // ==========================================
@@ -50,57 +48,35 @@ window.onload = async () => {
     // 1. DATA CORE: Load data user agar variabel window.userState tersedia
     loadUserData(); 
     
-    // 2. DAILY LOGIC: Cek reset harian dan perbarui Streak (Penting untuk retensi user)
+    // 2. DAILY LOGIC: Cek reset harian dan perbarui Streak
     checkDailyReset();
     if (typeof updateStreak === 'function') {
         updateStreak(); 
     }
 
-    // 3. DATA SYNC: Memberi label level pada soal agar filter Level 1-5 berfungsi
-    // Cukup dipanggil sekali saja di sini
+    // 3. SB DATA SYNC: Proses data Sentence Builder lokal
     if (typeof syncSentenceBuilderData === 'function') {
         syncSentenceBuilderData();
     }
 
-    // 4. DICTATION SYNC: Memuat data dikte secara asinkron
-    if (typeof syncDictationData === 'function') {
-        await syncDictationData();
+    // 4. DICTATION SYNC (LOCAL): Proses data Dikte dari file lokal (Blok 7)
+    // Kita panggil fungsi lokal yang baru saja kita simpan di Blok 7
+    if (typeof syncDictationLocalData === 'function') {
+        syncDictationLocalData();
     }
 
-    // 5. ARENA ENGINE: Menggambar peta & mengatur gembok level berdasarkan userState
+    // 5. ARENA ENGINE: Menggambar peta & gembok level
     if (typeof initArenaLogic === 'function') {
         initArenaLogic();
     }
 
-    // 6. UI UPDATE: Memperbarui semua tampilan (XP, Nyawa, Nama, dsb)
-    // Pastikan fungsi updateUI() Anda mencakup updateProfileUI()
+    // 6. UI UPDATE: Memperbarui tampilan skor, nyawa, dan progress bar
     if (typeof updateUI === 'function') {
         updateUI();
     }
     
-    console.log("LinguaQuest Ready: User Level " + window.userState.currentLevel);
+    console.log("✅ LinguaQuest Ready: User Level " + (userState.currentLevel || 1));
 };
-
-async function syncDictationData() {
-    try {
-        const response = await fetch(DICT_URL);
-        const csvData = await response.text();
-        const rows = csvData.split('\n').slice(1); 
-
-        window.dictationBank = rows.map(row => {
-            const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
-            return { 
-                level: parseInt(cols[0]) || 1,
-                target: cols[2] || "", 
-                hint: cols[1] || "",
-                tense: "Dictation Exercise"
-            };
-        });
-        console.log("✅ Dictation Bank Synced");
-    } catch (error) {
-        console.error("Gagal sinkron data:", error);
-    }
-}
 
 // ==========================================
 // 4. NAVIGATION & UI
@@ -373,60 +349,135 @@ function checkSentence(correct) {
 }
 
 // ==========================================
-// 7. DICTATION LOGIC
+// 7. DICTATION LOGIC (LOCAL DATA SYNC)
 // ==========================================
+/**
+ * 1. Sinkronisasi Data (Pastikan Level Terkunci)
+ */
+function syncDictationLocalData() {
+    window.dictationBank = []; 
+
+    const sources = [
+        { data: window.DICTATION_L1_SENTENCES, lv: 1 },
+        { data: window.DICTATION_L2_SENTENCES, lv: 2 },
+        { data: window.DICTATION_L3_SENTENCES, lv: 3 },
+        { data: window.DICTATION_L4_SENTENCES, lv: 4 },
+        { data: window.DICTATION_L5_SENTENCES, lv: 5 }
+    ];
+
+    sources.forEach(source => {
+        if (source.data && Array.isArray(source.data)) {
+            const formatted = source.data.map(row => ({
+                id: row[0],
+                level: Number(source.lv), // Pastikan ini Number
+                target: row[4],  
+                hint: row[5]     
+            }));
+            window.dictationBank.push(...formatted);
+        }
+    });
+    console.log("✅ Dictation Bank Ready. Level 1 count:", window.dictationBank.filter(s => s.level === 1).length);
+}
+
+/**
+ * 2. Memulai Dictation (Filter Spesifik)
+ */
 function startDictation() {
-    if (!canPlayModule('dictation')) return;
+    if (!window.dictationBank || window.dictationBank.length === 0) {
+        syncDictationLocalData();
+    }
 
-    const source = (typeof DICTATION_L1_SENTENCES !== 'undefined') ? DICTATION_L1_SENTENCES : [];
-    if (source.length === 0) return alert("Data Dictation tidak ditemukan!");
+    if (typeof canPlayModule === 'function' && !canPlayModule('dictation')) return;
 
-    const randomRow = source[Math.floor(Math.random() * source.length)];
-    const activeRow = Array.isArray(randomRow[0]) ? randomRow[0] : randomRow;
+    // AMBIL LEVEL DARI USER STATE DAN PAKSA JADI NUMBER
+    const currentLv = Number(userState.currentLevel) || 1;
+
+    // FILTER KETAT: Hanya soal yang levelnya sama persis
+    const available = window.dictationBank.filter(s => Number(s.level) === currentLv);
     
-    const sentenceTarget = String(activeRow[4]);
-    const meaningTarget = activeRow[5];
+    if (available.length === 0) {
+        console.error("Filter gagal. Level dicari:", currentLv, "Data tersedia:", window.dictationBank);
+        return alert(`Soal untuk Level ${currentLv} tidak ditemukan.`);
+    }
 
+    // Ambil acak hanya dari hasil filter tersebut
+    const data = available[Math.floor(Math.random() * available.length)];
+    const safeTarget = encodeURIComponent(data.target);
+
+    // TAMPILAN UI
     const htmlContent = `
         <div class="theory-card" style="text-align:center">
-            <div style="margin:30px 0; display: flex; justify-content: center; gap: 20px;">
-                <button onclick="playVoice('${sentenceTarget.replace(/'/g, "\\'")}', 0.8)" class="node-circle" style="width:70px; height:70px; background:#2196F3; color:white; border-radius:50%;"><i class="fas fa-volume-up"></i></button>
-                <button onclick="playVoice('${sentenceTarget.replace(/'/g, "\\'")}', 0.4)" class="node-circle" style="width:55px; height:55px; background:#FFF176; color:#F57F17; border-radius:50%;"><i class="fas fa-snail"></i></button>
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px; font-size:0.8rem; color:#666;">
+                <span>MODUL DIKTE: LEVEL ${currentLv}</span>
+                <span><i class="fas fa-heart" style="color:#f44336;"></i> ${userState.isPremium ? '∞' : userState.lives}</span>
             </div>
-            <p><i>Artinya: ${meaningTarget}</i></p>
-            <textarea id="dictation-input" placeholder="Tulis yang Anda dengar..." style="width:100%; height:80px; padding:12px; border-radius:12px;"></textarea>
-            <button class="btn-upgrade btn-premium" style="width:100%; margin-top:20px;" onclick="checkDictation('${sentenceTarget.replace(/'/g, "\\'")}')">PERIKSA JAWABAN</button>
-            <div id="dictation-feedback" style="margin-top:15px; padding:15px; border-radius:10px; display:none; font-weight:bold;"></div>
+
+            <div style="margin:20px 0; display:flex; justify-content:center; gap:20px;">
+                <button onclick="playVoice(decodeURIComponent('${safeTarget}'), 0.8)" class="node-circle" style="width:65px; height:65px; background:#2196F3; border:none; border-radius:50%; color:white; cursor:pointer;">
+                    <i class="fas fa-volume-up fa-xl"></i>
+                </button>
+                <button onclick="playVoice(decodeURIComponent('${safeTarget}'), 0.4)" class="node-circle" style="width:50px; height:50px; background:#FFF176; border:none; border-radius:50%; color:#F57F17; cursor:pointer;">
+                    <i class="fas fa-snail"></i>
+                </button>
+            </div>
+
+            <p style="font-size:1rem; color:#555; margin-bottom:15px;"><i>"${data.hint}"</i></p>
+            
+            <textarea id="dictation-input" placeholder="Tulis kalimat yang Anda dengar..." 
+                style="width:100%; height:80px; padding:12px; border-radius:12px; border:2px solid #ddd;"></textarea>
+            
+            <div id="dictation-feedback" style="margin-top:10px; padding:12px; border-radius:10px; display:none; font-weight:bold;"></div>
+
+            <button id="btn-check-dict" class="btn-upgrade btn-premium" style="width:100%; margin-top:15px;" 
+                onclick="checkDictation(decodeURIComponent('${safeTarget}'))">PERIKSA JAWABAN</button>
         </div>
     `;
 
-    openGameOverlay(htmlContent, "DICTATION MODE");
-    setTimeout(() => playVoice(sentenceTarget, 0.8), 500);
+    openGameOverlay(htmlContent, "DICTATION LV " + currentLv);
+    setTimeout(() => playVoice(data.target, 0.8), 500);
 }
 
+/**
+ * 3. Validasi Jawaban
+ */
 function checkDictation(correct) {
-    const userInput = document.getElementById('dictation-input').value.trim().toLowerCase();
-    const cleanCorrect = correct.toLowerCase().replace(/[.!?,]/g, '').trim();
+    const userInput = document.getElementById('dictation-input').value.trim();
     const feedbackEl = document.getElementById('dictation-feedback');
+    const btnCheck = document.getElementById('btn-check-dict');
+
+    if (!userInput) return alert("Silakan tulis jawaban terlebih dahulu.");
+
+    const cleanUser = userInput.toLowerCase().replace(/[.!?,]/g, '').trim();
+    const cleanCorrect = correct.toLowerCase().replace(/[.!?,]/g, '').trim();
 
     feedbackEl.style.display = 'block';
 
-    if (userInput.replace(/[.!?,]/g, '') === cleanCorrect) {
+    if (cleanUser === cleanCorrect) {
         userState.stats.dictation.doneToday++;
         userState.points += 15;
         saveUserData();
 
-        feedbackEl.style.backgroundColor = "#d7ffb8";
-        feedbackEl.style.color = "#58cc02";
-        feedbackEl.innerHTML = "✅ Benar! +15 XP";
-        playSuccessSound();
+        feedbackEl.style.backgroundColor = "#e8f5e9";
+        feedbackEl.style.color = "#2e7d32";
+        feedbackEl.innerHTML = `✅ Sempurna! +15 XP <br>
+            <button onclick="startDictation()" class="btn-upgrade" style="background:#2e7d32; color:white; margin-top:10px; width:100%; border:none; border-radius:8px; padding:10px;">SOAL BERIKUTNYA</button>`;
+        btnCheck.style.display = 'none';
         
-        setTimeout(() => {
-            closeGame();
-            updateProfileUI();
-        }, 2000);
+        if (typeof playSuccessSound === 'function') playSuccessSound();
     } else {
-        handleWrong();
+        // Panggil fungsi handleWrong untuk urusan nyawa & feedback dasar
+        handleWrong(); 
+        
+        feedbackEl.style.backgroundColor = "#ffebee";
+        feedbackEl.style.color = "#c62828";
+        feedbackEl.innerHTML = `
+            ❌ Masih ada yang keliru.<br>
+            <div style="margin-top:8px; font-weight:normal; font-size:0.85rem; border-top:1px solid #ffcdd2; padding-top:8px;">
+                <b>Kunci Jawaban:</b><br><span style="color:#333;">"${correct}"</span>
+            </div>
+            <button onclick="startDictation()" class="btn-upgrade" style="background:#c62828; color:white; margin-top:10px; width:100%; border:none; border-radius:8px; padding:10px;">COBA SOAL LAIN</button>
+        `;
+        btnCheck.style.display = 'none';
     }
 }
 
@@ -488,25 +539,48 @@ function nextLevel() {
 }
 
 function canPlayModule(moduleKey) {
+    // 1. Bypass untuk user Premium
     if (userState.isPremium) return true;
+
+    // 2. Cek Nyawa
     if (userState.lives <= 0) {
-        showPremiumWall("Nyawa Habis!");
+        showPremiumWall("Nyawa Habis! Tunggu reset harian atau gunakan Premium.");
         return false;
     }
-    const m = userState.stats[moduleKey];
-    if (m && m.doneToday >= m.dailyLimit) {
-        showPremiumWall(`Limit harian ${moduleKey} tercapai!`);
-        return false;
+
+    // 3. Cek Limit Harian berdasarkan moduleKey (dictation, sentenceBuilder, dsb)
+    const stats = userState.stats[moduleKey];
+    if (stats) {
+        if (stats.doneToday >= stats.dailyLimit) {
+            showPremiumWall(`Limit harian ${moduleKey.replace(/([A-Z])/g, ' $1')} tercapai!`);
+            return false;
+        }
     }
+
     return true;
 }
 
+/**
+ * REVISI: Penanganan Jawaban Salah
+ * Fungsi: Mengurangi nyawa dan memberikan feedback visual.
+ */
 function handleWrong() {
+    // User premium tidak kehilangan nyawa
     if (userState.isPremium) return;
-    userState.lives--;
-    saveUserData();
+
+    // Kurangi nyawa (tidak boleh di bawah 0)
+    if (userState.lives > 0) {
+        userState.lives--;
+    }
     
-    const feedbackEl = document.getElementById('sb-feedback') || document.getElementById('dictation-feedback');
+    saveUserData(); // Simpan perubahan ke LocalStorage
+    updateUI();     // Perbarui tampilan jumlah hati di navbar
+
+    // Cari elemen feedback yang aktif di overlay
+    const feedbackEl = document.getElementById('sb-feedback') || 
+                       document.getElementById('dictation-feedback') || 
+                       document.getElementById('exam-feedback');
+
     if (feedbackEl) {
         feedbackEl.style.display = 'block';
         feedbackEl.style.backgroundColor = "#ffebee";
@@ -514,9 +588,12 @@ function handleWrong() {
         feedbackEl.innerHTML = `❌ Salah! Sisa nyawa: ${userState.lives}`;
     }
 
+    // Jika nyawa habis setelah pengurangan ini
     if (userState.lives <= 0) {
-        userState.lives = 0;
-        showPremiumWall("Nyawa Habis!");
+        setTimeout(() => {
+            closeGameOverlay(); // Tutup game yang sedang jalan
+            showPremiumWall("Nyawa Anda telah habis! Belajar lagi besok atau aktifkan Premium.");
+        }, 1500);
     }
 }
 
@@ -547,13 +624,21 @@ function checkDailyReset() {
     }
 }
 
-function playVoice(text, rate = 1) {
-    window.speechSynthesis.cancel(); 
-    let cleanText = String(text).replace(/_/g, ' ').trim();
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.lang = 'en-US';
-    utterance.rate = rate;
-    window.speechSynthesis.speak(utterance);
+function playVoice(text, rate = 0.8) {
+    // Memastikan browser mendukung SpeechSynthesis
+    if ('speechSynthesis' in window) {
+        // Batalkan suara yang sedang berjalan agar tidak tumpang tindih
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = rate;
+        
+        // Menangani eror "Audio play blocked" dengan memastikan dipicu oleh klik
+        window.speechSynthesis.speak(utterance);
+    } else {
+        console.error("Browser tidak mendukung Text-to-Speech.");
+    }
 }
 
 function openGameOverlay(contentHTML, title = "LINGUAQUEST") {
@@ -753,21 +838,25 @@ function playVocabAudio(text) {
     
     window.speechSynthesis.speak(utterance);
 }
-
-    // ==========================================
+// ==========================================
 // 11. ADDITIONAL UTILITIES & ACCESS CONTROL
 // ==========================================
 function checkPremiumAccess(actionType) {
     if (userState.isPremium) return true; 
 
+    // Cek limit harian Dictation
     if (actionType === 'dictation') {
-        if ((userState.stats.dictation?.doneToday || 0) >= 5) {
-            showPremiumWall("Limit Harian Dictation Tercapai!");
+        const done = userState.stats.dictation?.doneToday || 0;
+        const limit = userState.stats.dictation?.dailyLimit || 5;
+        if (done >= limit) {
+            showPremiumWall("Limit Harian Dictation Tercapai! (5/5)");
             return false;
         }
     }
     
+    // Cek limit harian Story
     if (actionType === 'story') {
+        // Karena di data.js belum ada stats.story, kita asumsikan limit 1
         if ((userState.storyDoneToday || 0) >= 1) {
             showPremiumWall("Limit membaca cerita harian tercapai.");
             return false;
@@ -789,3 +878,49 @@ function isValidEnglishWord(word) {
     return vocabList.some(entry => entry.word.toLowerCase() === cleanWord);
 }
 
+/**
+ * REVISI: Logika Ujian Global
+ */
+function startGlobalLevelExam() {
+    const currentLv = userState.currentLevel;
+    
+    // Ambil soal SB & Dictation yang sesuai level user sekarang
+    const sbSoal = window.SENTENCE_BUILDER_EXERCISES.filter(s => s.level === currentLv);
+    const dictSoal = window.dictationBank.filter(s => s.level === currentLv);
+
+    // Minimal 10 soal untuk ujian
+    const examPool = [
+        ...sbSoal.sort(() => 0.5 - Math.random()).slice(0, 5),
+        ...dictSoal.sort(() => 0.5 - Math.random()).slice(0, 5)
+    ];
+
+    window.examState = {
+        questions: examPool,
+        currentIndex: 0,
+        score: 0
+    };
+
+    renderNextExamQuestion();
+}
+
+function renderNextExamQuestion() {
+    const state = window.examState;
+    const data = state.questions[state.currentIndex];
+    const isDict = data.id && data.id.startsWith('d_'); // Cek jika ID diawali 'd_' (Dictation)
+
+    const html = `
+        <div class="theory-card" style="text-align:center;">
+            <h3>Ujian Kenaikan Level ${userState.currentLevel}</h3>
+            <p>Soal ${state.currentIndex + 1} / 10</p>
+            <hr>
+            ${isDict ? 
+                `<button onclick="playVoice('${data.target}', 0.8)" class="btn-upgrade btn-secondary">🔊 Dengar Suara</button>
+                 <p><i>"${data.hint}"</i></p>` :
+                `<p style="font-size:1.2rem;"><b>"${data.meaning}"</b></p>`
+            }
+            <input type="text" id="exam-input" class="input-modern" style="width:100%; margin:15px 0;" placeholder="Jawaban Inggris...">
+            <button onclick="submitExamAnswer()" class="btn-upgrade btn-premium" style="width:100%;">LANJUT</button>
+        </div>
+    `;
+    openGameOverlay(html, "GLOBAL FINAL EXAM");
+}
