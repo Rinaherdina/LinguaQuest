@@ -60,26 +60,27 @@
         <i class="fas fa-chevron-right arrow-icon"></i>
     </div>
 
-    </section>
-
-        <div class="module-card sb-theme" onclick="startSentenceBuilder()">
-            <div class="module-icon"><i class="fas fa-puzzle-piece"></i></div>
-            <div class="module-info">
-                <h3>Sentence Builder</h3>
-                <p>Susun kalimat dari bank soal</p>
-            </div>
-            <i class="fas fa-chevron-right arrow-icon"></i>
+    <div class="module-card sb-theme" onclick="startSentenceBuilder()">
+        <div class="module-icon"><i class="fas fa-puzzle-piece"></i></div>
+        <div class="module-info">
+            <h3>Sentence Builder</h3>
+            <p>Susun kalimat dari bank soal</p>
         </div>
+        <i class="fas fa-chevron-right arrow-icon"></i>
+    </div>
+</section>
 
-        <div class="arena-section">
-            <h2 class="section-title">The Arena</h2>
-            <div class="level-pathway" id="arena-map">
-                <div class="level-node active" onclick="switchTab('level-menu')">
-                    <div class="node-circle">1</div>
-                    <span class="level-label">THE NEWBIE</span>
-                </div>
-                <div class="level-node locked" onclick="showPremiumWall('Level 2 Terkunci')">
-                    <div class="node-circle"><i class="fas fa-lock"></i></div>
+    <div class="arena-section">
+        <h2 class="section-title">The Arena</h2>
+        <div class="level-pathway" id="arena-map">
+            <div class="level-node active" onclick="switchTab('level-menu')">
+                <div class="node-circle">1</div>
+                <span class="level-label">THE NEWBIE</span>
+            </div>
+            </div>
+        </div>
+            <div class="level-node locked" onclick="showPremiumWall('Level 2 Terkunci')">
+            <div class="node-circle"><i class="fas fa-lock"></i></div>
                     <span class="level-label">THE VOYAGER</span>
                 </div>
                 <div class="level-node locked"><div class="node-circle"><i class="fas fa-lock"></i></div><span class="level-label">LEVEL 3</span></div>
@@ -221,11 +222,17 @@
     <script src="scripts/idiom_data.js"></script> 
     <script src="scripts/sb_data.js"></script>
     <script src="scripts/dictation_L1_sentences.js"></script>
+    <script src="js/vocabulary-lv1.js"></script>
+    <script src="js/vocabulary-lv2.js"></script>
+    <script src="js/vocabulary-lv3.js"></script>
+    <script src="js/vocabulary-lv4.js"></script>
+    <script src="js/vocabulary-lv5.js"></script>
     <script src="scripts/vocab_quiz_logic.js"></script>
     <script src="scripts/arena_logic.js"></script>
     <script src="scripts/tenses_logic.js"></script> 
     <script src="scripts/story_logic.js"></script>
     <script src="scripts/speaking_logic.js"></script>
 
-    <script src="scripts/main.js"></script></body>
+    <script src="scripts/main.js"></script>
+</body>
 </html>

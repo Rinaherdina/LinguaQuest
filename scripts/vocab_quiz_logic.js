@@ -20,9 +20,11 @@ function startVocabQuiz() {
         const progress = ((currentStep + 1) / quizData.length) * 100;
         
         // Buat pilihan jawaban (1 benar, 3 salah)
-        let options = [item.translation];
+        let correctAns = item.translation || item.meaning;
+        let options = [correctAns];
         while (options.length < 4) {
-            let randomWord = vocabList[Math.floor(Math.random() * vocabList.length)].translation;
+            let randomItem = vocabList[Math.floor(Math.random() * vocabList.length)];
+            let randomWord = randomItem.translation || randomItem.meaning;
             if (!options.includes(randomWord)) options.push(randomWord);
         }
         options.sort(() => 0.5 - Math.random());
@@ -85,21 +87,41 @@ function startVocabQuiz() {
 }
 
 function finishVocabQuiz(finalScore, total) {
-    let html = `
-        <div class="theory-card" style="text-align:center; padding-top: 50px;">
-            <i class="fas fa-trophy" style="font-size: 4rem; color: gold; margin-bottom: 20px;"></i>
-            <h2>Latihan Selesai!</h2>
-            <p style="margin: 10px 0 25px 0; color: #666;">Kamu berhasil menguasai kosakata baru hari ini.</p>
-            
-            <div style="background: #f0f7ff; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
-                <div style="font-size: 0.9rem; color: #4facfe;">TOTAL SKOR</div>
-                <div style="font-size: 2rem; font-weight: bold; color: var(--primary-blue);">+${finalScore} XP</div>
-            </div>
+    const minScoreToPass = total * 1.5; // Contoh: Benar minimal 8 dari 10 soal (skor 16)
+    const isPassed = finalScore >= minScoreToPass;
 
-            <button class="btn-upgrade btn-premium" onclick="closeGame(); updateUI();">
+    let resultHTML = "";
+
+    if (isPassed) {
+        // LOGIKA NAIK LEVEL
+        if (userState.currentLevel < 5) {
+            userState.currentLevel += 1;
+            userState.points += finalScore;
+            saveUserData(); // Simpan ke LocalStorage
+            
+            resultHTML = `
+                <i class="fas fa-medal" style="font-size: 4rem; color: #ffca28; margin-bottom: 20px;"></i>
+                <h2 style="color: #2e7d32;">SELAMAT! LULUS!</h2>
+                <p>Skor kamu: <b>${finalScore}</b>. Kamu sekarang naik ke <b>Level ${userState.currentLevel}</b>!</p>
+            `;
+        } else {
+            resultHTML = `<h2>Luar Biasa!</h2><p>Kamu telah mencapai level maksimal.</p>`;
+        }
+    } else {
+        resultHTML = `
+            <i class="fas fa-times-circle" style="font-size: 4rem; color: #e53935; margin-bottom: 20px;"></i>
+            <h2 style="color: #c62828;">BELUM LULUS</h2>
+            <p>Skor kamu: ${finalScore}. Minimal skor untuk naik level adalah ${minScoreToPass}. Ayo belajar lagi!</p>
+        `;
+    }
+
+    let html = `
+        <div class="theory-card" style="text-align:center; padding: 40px 20px;">
+            ${resultHTML}
+            <button class="btn-upgrade btn-premium" style="margin-top:25px; width:100%;" onclick="closeGame(); updateUI();">
                 KEMBALI KE BERANDA
             </button>
         </div>
     `;
-    openGameOverlay(html);
+    openGameOverlay(html, "HASIL UJIAN");
 }
