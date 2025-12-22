@@ -88,7 +88,7 @@ function openLevelMenu(levelId) {
     window.scrollTo(0, 0); // Reset scroll ke atas
 
     // 4. Render isi menu ke dalam levelMenuView secara dinamis
-    levelMenuView.innerHTML = `
+levelMenuView.innerHTML = `
         <div class="menu-header" style="background:${meta.color}; padding: 20px; color: white; text-align: center; position: relative; border-radius: 0 0 20px 20px;">
             <button onclick="closeLevelMenu()" style="position: absolute; left: 15px; top: 15px; background: none; border: none; color: white; font-size: 20px; cursor: pointer;">
                 <i class="fas fa-arrow-left"></i>
@@ -114,33 +114,27 @@ function openLevelMenu(levelId) {
                         <small style="color: #666;">Dengar dan tulis apa yang diucapkan</small>
                     </div>
                 </button>
+
+                <button class="btn-upgrade btn-secondary" onclick="startTenses()" style="width: 100%; text-align: left; padding: 18px; display: flex; align-items: center; gap: 15px; background: #fff9c4; border: 2px solid #fbc02d;">
+                    <i class="fas fa-flask fa-lg" style="color: #f57f17;"></i>
+                    <div>
+                        <strong style="display:block;">Tenses Laboratory</strong>
+                        <small style="color: #666;">Eksperimen rumus & sandbox kalimat</small>
+                    </div>
+                </button>
             </div>
 
             <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
 
             <div class="exam-section" style="background: #fdfdfd; border: 2px dashed #ddd; border-radius: 15px; padding: 20px; text-align: center;">
                 <h4 style="margin-top: 0; color: #333;">Level Final Exam</h4>
-                
                 <button class="btn-upgrade ${isUnlocked ? 'btn-premium' : 'btn-locked'}" 
                         onclick="${isUnlocked ? 'openFinalExamModule()' : ''}" 
                         style="width: 100%; padding: 15px; margin-bottom: 10px; cursor: ${isUnlocked ? 'pointer' : 'not-allowed'};">
                     ${isUnlocked ? '<i class="fas fa-rocket"></i> MULAI UJIAN FINAL' : '<i class="fas fa-lock"></i> UJIAN TERKUNCI'}
                 </button>
-
-                ${!window.userState.isPremium ? `
-                    <div style="width: 100%; background: #eee; height: 12px; border-radius: 6px; overflow: hidden; margin-top: 15px; border: 1px solid #ddd;">
-                        <div style="width: ${progressPercent}%; background: linear-gradient(90deg, #f1c40f, #f39c12); height: 100%; transition: width 0.5s;"></div>
-                    </div>
-                    <small style="display: block; margin-top: 8px; color: #555; font-weight: bold;">
-                        ${userXP.toLocaleString()} / ${targetXP.toLocaleString()} XP
-                    </small>
-                    <p style="font-size: 0.75rem; color: #888; margin-top: 4px;">Kumpulkan XP untuk membuka ujian secara gratis</p>
-                ` : `
-                    <div style="margin-top: 10px; color: #d4af37; font-weight: bold; font-size: 0.9rem;">
-                        <i class="fas fa-crown"></i> AKSES PREMIUM AKTIF
-                    </div>
-                `}
-            </div>
+                
+                </div>
         </div>
     `;
 }

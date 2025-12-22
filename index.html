@@ -6,32 +6,64 @@
     <title>LinguaQuest - 16 Tenses Mastery</title>
     <link rel="stylesheet" href="styles/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* CSS Integrasi untuk Modul Tenses & Grid Menu */
+        .tense-selector { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; }
+        .tense-btn { 
+            background: white; border: 2px solid #2196F3; color: #2196F3; padding: 8px 16px; 
+            border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.3s;
+        }
+        .tense-btn:hover { background: #2196F3; color: white; }
+        .formula-box { flex: 1; min-width: 250px; padding: 15px; border-radius: 10px; margin-bottom: 10px; }
+        .sandbox-input { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; }
+        .sandbox-input:focus { border-color: #2196F3; outline: none; }
+        
+        /* Grid 4 Kolom untuk Level Menu */
+        .sub-module-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .sub-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .sub-card:active { transform: scale(0.95); }
+        .sub-card i { font-size: 2rem; }
+        .sub-card span { font-weight: bold; color: #333; font-size: 0.9rem; }
+    </style>
 </head>
 
-<div id="archive-modal" class="overlay" style="display: none; background: rgba(0,0,0,0.9); z-index: 10000;">
-    <div class="theory-card" style="width: 90%; max-width: 500px; max-height: 80vh; display: flex; flex-direction: column; position: relative;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h3 style="margin: 0;"><i class="fas fa-book-bookmark"></i> Album Idiom</h3>
-            <button onclick="document.getElementById('archive-modal').style.display='none'" style="background:none; border:none; font-size:1.2rem; cursor:pointer;">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <input type="text" id="idiom-search" placeholder="Cari idiom..." onkeyup="filterArchive()" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px; font-size: 1rem;">
-
-        <div id="full-archive-list" style="overflow-y: auto; flex: 1; display: grid; grid-template-columns: 1fr; gap: 10px; padding-right: 5px;">
-            </div>
-    </div>
-</div>
-
 <body>
+    <div id="archive-modal" class="overlay" style="display: none; background: rgba(0,0,0,0.9); z-index: 10000;">
+        <div class="theory-card" style="width: 90%; max-width: 500px; max-height: 80vh; display: flex; flex-direction: column; position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin: 0;"><i class="fas fa-book-bookmark"></i> Album Idiom</h3>
+                <button onclick="document.getElementById('archive-modal').style.display='none'" style="background:none; border:none; font-size:1.2rem; cursor:pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <input type="text" id="idiom-search" placeholder="Cari idiom..." onkeyup="filterArchive()" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px;">
+            <div id="full-archive-list" style="overflow-y: auto; flex: 1; display: grid; gap: 10px;"></div>
+        </div>
+    </div>
 
     <header class="app-header">
-    <div class="header-content">
-        <i class="fas fa-graduation-cap"></i>
-        <h1>LINGUAQUEST</h1>
-    </div>
-</header>
+        <div class="header-content">
+            <i class="fas fa-graduation-cap"></i>
+            <h1>LINGUAQUEST</h1>
+        </div>
+    </header>
 
     <section class="stats-bar">
         <div class="stat-item"><i class="fas fa-heart"></i> <span id="life-count">5</span></div>
@@ -41,178 +73,154 @@
     </section>
 
     <main id="app-container">
-    <section id="home-view">
-    <div class="module-card vocab-theme" onclick="openVocabPage()">
-        <div class="module-icon"><i class="fas fa-spell-check"></i></div>
-        <div class="module-info">
-            <h3>Daily Vocab</h3>
-            <p id="vocab-preview">Pelajari kata-kata kunci level ini</p>
-        </div>
-        <i class="fas fa-chevron-right arrow-icon"></i>
-    </div>
-
-    <div class="module-card idiom-special" onclick="openIdiomPage()"> 
-        <div class="module-icon"><i class="fas fa-lightbulb"></i></div>
-        <div class="module-info">
-            <h3>Daily Idiom</h3>
-            <p id="idiom-text">Ketuk untuk melihat ungkapan hari ini</p>
-        </div>
-        <i class="fas fa-chevron-right arrow-icon"></i>
-    </div>
-
-    <div class="module-card sb-theme" onclick="startSentenceBuilder()">
-        <div class="module-icon"><i class="fas fa-puzzle-piece"></i></div>
-        <div class="module-info">
-            <h3>Sentence Builder</h3>
-            <p>Susun kalimat dari bank soal</p>
-        </div>
-        <i class="fas fa-chevron-right arrow-icon"></i>
-    </div>
-</section>
-
-    <div class="arena-section">
-        <h2 class="section-title">The Arena</h2>
-        <div class="level-pathway" id="arena-map">
-            <div class="level-node active" onclick="switchTab('level-menu')">
-                <div class="node-circle">1</div>
-                <span class="level-label">THE NEWBIE</span>
+        <section id="home-view">
+            <div class="module-card vocab-theme" onclick="openVocabPage()">
+                <div class="module-icon"><i class="fas fa-spell-check"></i></div>
+                <div class="module-info"><h3>Daily Vocab</h3><p id="vocab-preview">Pelajari kata-kata kunci level ini</p></div>
+                <i class="fas fa-chevron-right arrow-icon"></i>
             </div>
+            <div class="module-card idiom-special" onclick="openIdiomPage()"> 
+                <div class="module-icon"><i class="fas fa-lightbulb"></i></div>
+                <div class="module-info"><h3>Daily Idiom</h3><p id="idiom-text">Ketuk untuk melihat ungkapan hari ini</p></div>
+                <i class="fas fa-chevron-right arrow-icon"></i>
             </div>
-        </div>
-            <div class="level-node locked" onclick="showPremiumWall('Level 2 Terkunci')">
-            <div class="node-circle"><i class="fas fa-lock"></i></div>
-                    <span class="level-label">THE VOYAGER</span>
+            <div class="module-card sb-theme" onclick="startSentenceBuilder()">
+                <div class="module-icon"><i class="fas fa-puzzle-piece"></i></div>
+                <div class="module-info"><h3>Sentence Builder</h3><p>Susun kalimat dari bank soal</p></div>
+                <i class="fas fa-chevron-right arrow-icon"></i>
+            </div>
+
+            <div class="arena-section">
+                <h2 class="section-title">The Arena</h2>
+                <div class="level-pathway" id="arena-map">
+                    <div class="level-node active" onclick="switchTab('level-menu')">
+                        <div class="node-circle">1</div><span class="level-label">THE NEWBIE</span>
+                    </div>
+                    <div class="level-node locked" onclick="showPremiumWall('Level 2 Terkunci')">
+                        <div class="node-circle"><i class="fas fa-lock"></i></div><span class="level-label">THE VOYAGER</span>
+                    </div>
                 </div>
-                <div class="level-node locked"><div class="node-circle"><i class="fas fa-lock"></i></div><span class="level-label">LEVEL 3</span></div>
-                <div class="level-node locked"><div class="node-circle"><i class="fas fa-lock"></i></div><span class="level-label">LEVEL 4</span></div>
-                <div class="level-node locked"><div class="node-circle"><i class="fas fa-lock"></i></div><span class="level-label">LEVEL 5</span></div>
             </div>
-        </div>
-    </section> 
-    
-    <section id="level-menu-view" style="display:none; padding: 20px;">
-        <div class="menu-header" style="margin-bottom: 25px;">
-            <button onclick="switchTab('home')" class="btn-upgrade btn-secondary" style="width:auto; padding: 8px 15px;">
-                <i class="fas fa-arrow-left"></i> Beranda
-            </button>
-            <h2 style="margin-top:15px; color: var(--primary-blue);">Level 1: The Newbie</h2>
-            <p style="color:#666; font-size:0.9rem;">Present, Past, & Future</p>
-        </div>
-
-        <div class="level-card" onclick="startSpeaking()">
-            <div class="level-icon" style="background: #ce82ff;">
-                <i class="fas fa-comment-dots"></i>
-        </div>
-        <div class="level-info">
-            <h3>Speaking Practice</h3>
-            <p>Latih pelafalan kalimatmu langsung!</p>
-        </div>
-        <div class="level-status">
-            <i class="fas fa-chevron-right"></i>
-        </div>
-    </div>
+        </section> 
         
-        <div class="sub-module-grid">
-            <div class="sub-card" onclick="startTenses()">
-                <i class="fas fa-book" style="color: #4f46e5;"></i>
-                <span>Tenses</span>
+        <section id="level-menu-view" style="display:none; padding: 20px;">
+            <div class="menu-header">
+                <button onclick="switchTab('home')" class="btn-upgrade btn-secondary" style="width:auto; padding: 8px 15px;">
+                    <i class="fas fa-arrow-left"></i> Kembali
+                </button>
+                <h2 style="margin-top:15px; color: var(--primary-blue);">Level 1: The Newbie</h2>
             </div>
-            <div class="sub-card" onclick="startDictation()">
-                <i class="fas fa-headphones" style="color: #1cb0f6;"></i>
-                <span>Dictation</span>
-            </div>
-            <div class="sub-card" onclick="startStoryMode()">
-                <i class="fas fa-book-open" style="color: #ff9600;"></i>
-                <span>Story Mode</span>
-            </div>
-            <div class="sub-card" onclick="alert('Fitur Suara Segera Hadir')">
-                <i class="fas fa-microphone" style="color: #58cc02;"></i>
-                <span>Pronunciation</span>
-            </div>
-        </div>
-    </section>
 
-    <section id="league-section" style="display:none; padding: 20px; text-align: center;">
-        <i class="fas fa-trophy" style="font-size: 3rem; color: gold; margin-bottom: 10px;"></i>
-        <h2>Liga Mingguan</h2>
-        <div id="league-content" style="margin-top: 20px;">
-            <p style="color: #666;">Bersainglah dengan siswa lain untuk naik ke kasta tertinggi!</p>
-        </div>
-    </section>
-
-    <section id="profile-section" style="display:none; padding: 20px;">
-        <div style="text-align:center; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-            <div style="width: 80px; height: 80px; background: var(--primary-blue); border-radius: 50%; margin: 0 auto 10px auto; display: flex; align-items: center; justify-content: center; border: 4px solid #e1f5fe;">
-                <i class="fas fa-user-graduate" style="font-size: 2.5rem; color: white;"></i>
-            </div>
-            <h2 id="profile-user-name" style="margin-bottom: 5px;">Scholar</h2>
-            <span id="user-rank" style="background: #fff3e0; color: #ff9800; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; border: 1px solid #ffe0b2;">
-                <i class="fas fa-medal"></i> Rookie
-            </span>
-        </div>
-
-        <div style="margin-top: 25px; background: white; padding: 15px; border-radius: 15px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; cursor: pointer;" onclick="showFullArchive()">
-                <h3 style="font-size: 1rem; margin: 0;"><i class="fas fa-book-bookmark"></i> Album Idiom</h3>
-                <span style="font-size: 0.8rem; color: var(--primary-blue); font-weight: bold;">Lihat Semua <i class="fas fa-chevron-right"></i></span>
-            </div>
-        
-            <div style="margin-bottom: 10px;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                    <span id="idiom-progress-text" style="font-size: 0.8rem; color: #666;">0 / 1000</span>
+            <div class="sub-module-grid">
+                <div class="sub-card" onclick="startTenses()">
+                    <i class="fas fa-book" style="color: #4f46e5;"></i><span>Tenses</span>
                 </div>
-                <div style="width: 100%; height: 8px; background: #eee; border-radius: 10px; overflow: hidden;">
-                    <div id="idiom-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%); transition: width 0.5s;"></div>
+                <div class="sub-card" onclick="startDictation()">
+                    <i class="fas fa-headphones" style="color: #1cb0f6;"></i><span>Dictation</span>
+                </div>
+                <div class="sub-card" onclick="startStoryMode()">
+                    <i class="fas fa-book-open" style="color: #ff9600;"></i><span>Story Mode</span>
+                </div>
+                <div class="sub-card" onclick="startSpeakingMode()">
+                    <i class="fas fa-microphone" style="color: #58cc02;"></i><span>Speaking Mode</span>
                 </div>
             </div>
+        </section>
 
-            <div id="idiom-collection-list" style="margin-top: 10px;">
+        <div id="game-overlay" class="overlay" style="display: none;">
+            <div class="game-header">
+                <button onclick="closeGameOverlay()" class="btn-secondary" style="background:none; border:none; color:white; font-size:1.5rem;">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="progress-container"><div id="progress-fill" style="width: 0%;"></div></div>
+            </div>
+            
+            <div id="game-content" style="padding: 20px; width: 100%; flex: 1; overflow-y: auto; background: #f5f7f8;">
+                <div id="tenses-module-ui">
+                    <h2 style="text-align:center;">Tenses Master</h2>
+                    
+                    <div class="tense-selector" id="tense-btns-container">
+                        <button class="tense-btn" onclick="startTenseQuiz('s_present')">Simple Present</button>
+                        <button class="tense-btn" onclick="startTenseQuiz('s_past')">Simple Past</button>
+                        <button class="tense-btn" onclick="startTenseQuiz('s_future')">Simple Future</button>
+                    </div>
+
+                    <div id="tense-display-card" style="display:none; background: white; border-radius: 15px; padding: 20px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+                        <h2 id="t-name" style="color: #2196F3; margin-bottom:5px;">Nama Tense</h2>
+                        <p id="t-usage" style="color:#666; font-style:italic; margin-bottom:15px;"></p>
+                        <p><strong><i class="fas fa-clock"></i> Keterangan Waktu:</strong> <span id="t-time"></span></p>
+                        <hr>
+                        
+                        <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top:15px;">
+                            <div class="formula-box" style="background: #f0f7ff;">
+                                <h4>📝 Verbal Sentence</h4>
+                                <p><b>(+)</b> <span id="f-v-pos"></span></p>
+                                <p><b>(-)</b> <span id="f-v-neg"></span></p>
+                                <p><b>(?)</b> <span id="f-v-int"></span></p>
+                                <ul id="v-examples-list" style="font-style: italic; font-size: 0.9em; margin-top:10px;"></ul>
+                            </div>
+
+                            <div class="formula-box" style="background: #fffcf0;">
+                                <h4>🏷️ Nominal Sentence</h4>
+                                <p><b>(+)</b> <span id="f-n-pos"></span></p>
+                                <p><b>(-)</b> <span id="f-n-neg"></span></p>
+                                <p><b>(?)</b> <span id="f-n-int"></span></p>
+                                <ul id="n-examples-list" style="font-style: italic; font-size: 0.9em; margin-top:10px;"></ul>
+                            </div>
+                        </div>
+
+                        <div id="sandbox-area" style="margin-top:25px; border-top: 2px dashed #ddd; padding-top:20px;">
+                            <h4 style="text-align:center;"><i class="fas fa-flask"></i> Tenses Sandbox</h4>
+                            <input type="text" id="in-pos" class="sandbox-input" placeholder="Tulis kalimat positif (+)...">
+                            <input type="text" id="in-neg" class="sandbox-input" placeholder="Tulis kalimat negatif (-)...">
+                            <input type="text" id="in-int" class="sandbox-input" placeholder="Tulis kalimat tanya (?)...">
+                            
+                            <button onclick="validateMasterSandbox()" class="btn-upgrade btn-premium" style="width:100%; margin-top:10px;">
+                                CEK STRUKTUR KALIMAT
+                            </button>
+                            <div id="sandbox-res" style="margin-top:15px; text-align:center;"></div>
+                        </div>
+
+                        <div style="margin-top:30px; background:#f9f9f9; padding:15px; border-radius:10px; border: 1px solid #ddd;">
+                            <h4 style="margin-bottom:10px;"><i class="fas fa-search"></i> Quick Verb Check</h4>
+                            <input type="text" id="verb-check-input" onkeyup="liveVerbCheck()" placeholder="Ketik kata kerja dasar (ex: eat, go, study)..." style="width:100%; padding:10px; border-radius:5px; border:1px solid #ccc;">
+                            <div id="verb-check-res" style="margin-top:10px; font-weight:normal;"></div>
+                        </div>
+                    </div>
                 </div>
+            </div>
         </div>
-    </section>
 
-    <div id="idiom-collection-list" style="margin-top: 20px;">
-        </div>
-    </section>
+        <section id="league-section" style="display:none; padding: 20px; text-align: center;">
+            <i class="fas fa-trophy" style="font-size: 3rem; color: gold;"></i>
+            <h2>Liga Mingguan</h2>
+        </section>
 
-
+        <section id="profile-section" style="display:none; padding: 20px;">
+            </section>
     </main>
-
-    <div id="game-overlay" class="overlay" style="display: none;">
-        <div class="game-header">
-            <div class="progress-container">
-                <div id="progress-fill" style="width: 0%;"></div>
-            </div>
-        </div>
-        <div id="game-content" style="padding: 20px; width: 100%; flex: 1; overflow-y: auto;"></div>
-    </div>
 
     <div id="premium-modal" class="overlay" style="display: none; background: rgba(0,0,0,0.8); z-index: 9999; justify-content:center; align-items:center;">
         <div class="premium-popup">
-            <i class="fas fa-heart-broken" style="font-size: 3.5rem; color: #ff4b4b; margin-bottom: 15px;"></i>
+            <i class="fas fa-heart-broken" style="font-size: 3.5rem; color: #ff4b4b;"></i>
             <h2 id="premium-reason">Nyawa Habis!</h2>
-            <p id="premium-text" style="margin-bottom: 20px; color: #666;">Tonton iklan untuk mendapatkan nyawa gratis atau bergabung dengan Premium.</p>
-            <button class="btn-upgrade btn-ad" onclick="watchAdForLife()">
-                <i class="fas fa-video"></i> TONTON IKLAN (+1 ❤️)
-            </button>
-            <button class="btn-upgrade btn-premium" onclick="alert('Membuka Halaman Pembayaran...')">
-                <i class="fas fa-crown"></i> BELI PREMIUM (∞ ❤️)
-            </button>
+            <button class="btn-upgrade btn-ad" onclick="watchAdForLife()">TONTON IKLAN (+1 ❤️)</button>
             <button class="btn-upgrade btn-secondary" onclick="closePremiumWall()">NANTI SAJA</button>
         </div>
     </div>
 
     <nav class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('home')">
-            <i class="fas fa-home"></i><span>Beranda</span>
-        </div>
-        <div class="nav-item" onclick="switchTab('league')">
-            <i class="fas fa-trophy"></i><span>Liga</span>
-        </div>
-        <div class="nav-item" onclick="switchTab('profile')">
-            <i class="fas fa-user"></i><span>Profil</span>
-        </div>
+        <div class="nav-item active" onclick="switchTab('home')"><i class="fas fa-home"></i><span>Beranda</span></div>
+        <div class="nav-item" onclick="switchTab('league')"><i class="fas fa-trophy"></i><span>Liga</span></div>
+        <div class="nav-item" onclick="switchTab('profile')"><i class="fas fa-user"></i><span>Profil</span></div>
     </nav>
+    
+    <audio id="sound-success" src="https://raw.githubusercontent.com/rafael-lua/LinguaQuest-Assets/main/success.mp3"></audio>
+    <audio id="sound-error" src="https://raw.githubusercontent.com/rafael-lua/LinguaQuest-Assets/main/error.mp3"></audio>
+
+    <div id="app-logo" class="navbar-brand" style="cursor:pointer; padding: 10px; font-weight: bold; border: 1px solid #ccc;">
+       LINGUAQUEST LOGO
+    </div>
 
     <script src="scripts/data.js"></script>
 
@@ -245,5 +253,8 @@
     <script src="scripts/dictation_L5_sentences.js"></script>
 
     <script src="scripts/main.js"></script>
+
+    <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;"></div>
+
 </body>
 </html>

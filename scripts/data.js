@@ -26,7 +26,8 @@ window.userState = window.userState || {
     todayIdiom: null,    // Menyimpan objek idiom hari ini
     lastIdiomDate: null,  // Menyimpan tanggal terakhir buka idiom
     idiomSentenceInput: "", // Simpan input kalimat user jika perlu
-    
+    lastStoryDate: null,
+
     getLevelString: function() {
         return "LV" + this.currentLevel;
     },
@@ -36,11 +37,13 @@ window.userState = window.userState || {
         idioms: { totalDone: 0, dailyLimit: 1, doneToday: 0 },
         dictation: { totalDone: 0, dailyLimit: 5, doneToday: 0 },
         tenses: { totalDone: 0, dailyLimit: 5, doneToday: 0 },
-        speaking: { doneToday: 0, dailyLimit: 5 }
+        speaking: { doneToday: 0, dailyLimit: 5 },
+        story: { doneToday: 0, dailyLimit: 1 }
     }
 };
 
 window.dictionaryData = window.dictionaryData || []; 
+window.activeTense = null;
 window.SENTENCE_BUILDER_EXERCISES = window.SENTENCE_BUILDER_EXERCISES || [];
 
 // ==========================================

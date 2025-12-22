@@ -4,7 +4,6 @@
 window.switchTab = switchTab;
 window.startDictation = startDictation;
 window.startSentenceBuilder = startSentenceBuilder;
-window.startTenses = (typeof startTensesModule !== 'undefined') ? startTensesModule : () => {};
 window.startSpeaking = (typeof startSpeakingModule !== 'undefined') ? startSpeakingModule : () => {};
 window.openIdiomPage = openIdiomPage;
 window.watchAdForLife = watchAdForLife;
@@ -15,6 +14,15 @@ window.showFullArchive = showFullArchive;
 window.filterArchive = filterArchive;
 window.openVocabPage = openVocabPage;
 window.playVocabAudio = playVocabAudio;
+window.startTenses = function() {
+    if (typeof startTensesModule === 'function') {
+        startTensesModule();
+    } else {
+        console.error("Fungsi startTensesModule tidak ditemukan. Pastikan tenses_logic.js sudah dimuat.");
+    }
+// Variabel status admin global
+window.isAdminMode = false;
+};
 
 // ==========================================
 // 2. STATE MANAGEMENT & CONFIG
@@ -117,25 +125,42 @@ function updateBottomNavUI(tab) {
 
 function updateUI() {
     const stats = userState.stats || {};
-    const livesEl = document.getElementById('life-count');
-    const pointsEl = document.getElementById('point-count');
-    const gemsEl = document.getElementById('gem-count');
-    const streakEl = document.getElementById('streak-count');
+    
+    // --- 1. Bagian Atas (Stats Bar) ---
+    const lifeElem = document.getElementById('life-count');
+    const gemElem = document.getElementById('gem-count');
+    const pointElem = document.getElementById('point-count');
+    const streakElem = document.getElementById('streak-count');
 
-    const totalDone = 
-        (stats.sentenceBuilder?.doneToday || 0) + 
-        (stats.dictation?.doneToday || 0) + 
-        (stats.tenses?.doneToday || 0) +
-        (stats.speaking?.doneToday || 0); 
+    // Menangani tampilan nyawa tak terbatas jika premium
+    if (lifeElem) lifeElem.innerText = userState.isPremium ? "∞" : (userState.lives || 0);
+    if (gemElem) gemElem.innerText = userState.gems || 0;
+    if (pointElem) pointElem.innerText = userState.points || 0;
+    if (streakElem) streakElem.innerText = userState.streakCount || 0;
 
-    if(livesEl) livesEl.innerText = userState.isPremium ? "∞" : (userState.lives || 0);
-    if(pointsEl) pointsEl.innerText = userState.points || 0;
-    if(gemsEl) gemsEl.innerText = userState.gems || 0;
-    if(streakEl) streakEl.innerText = userState.streakCount || 0;
+    // --- 2. Bagian Profil (Accumulated Stats) ---
+    const profileXP = document.getElementById('profile-xp-display');
+    if (profileXP) profileXP.innerText = `${userState.points} XP`;
 
+    // Update Progress Bar Menuju Level Berikutnya (Ganjaran XP)
+    const nextMeta = curriculumMetadata[userState.currentLevel];
+    if (nextMeta) {
+        const progress = Math.min((userState.points / nextMeta.xpToExam) * 100, 100);
+        const bar = document.getElementById('xp-progress-bar');
+        if (bar) bar.style.width = progress + "%";
+    }
+
+    // --- 3. Progress Bar Aktivitas Harian (Main Home) ---
     const mainProgress = document.getElementById('main-progress-fill');
     if (mainProgress) {
-        const totalLimit = 20; 
+        // Menghitung total pengerjaan modul hari ini
+        const totalDone = 
+            (stats.sentenceBuilder?.doneToday || 0) + 
+            (stats.dictation?.doneToday || 0) + 
+            (stats.tenses?.doneToday || 0) +
+            (stats.speaking?.doneToday || 0); 
+            
+        const totalLimit = 20; // Target 20 latihan per hari
         const percentage = (totalDone / totalLimit) * 100;
         mainProgress.style.width = Math.min(percentage, 100) + "%";
     }
@@ -523,12 +548,29 @@ function updateStreak() {
 }
 
 function addXP(amount) {
+    // 1. Tambah poin total & akumulasi statistik profil
     userState.points += amount;
     userState.weeklyXP = (userState.weeklyXP || 0) + amount;
-    saveUserData();
-    console.log(`XP Bertambah! Total sekarang: ${userState.points}`);
-}
+    
+    // Tambahkan ke statistik kumulatif seumur hidup (jika ada)
+    if (!userState.stats.totalXP) userState.stats.totalXP = 0;
+    userState.stats.totalXP += amount;
 
+    // 2. Gunakan fungsi suara terpusat untuk menghindari error konsol
+    playSuccessSound();
+
+    // 3. Notifikasi Toast
+    if (typeof showToast === 'function') {
+        showToast(`+${amount} XP Berhasil Didapatkan!`, 'success');
+    }
+
+    // 4. Simpan & Update UI Secara Menyeluruh
+    // Fungsi saveUserData yang baru sudah mencakup updateUI() dan updateProfileUI()
+    saveUserData(); 
+
+    console.log(`XP Bertambah! Total XP Profil: ${userState.stats.totalXP}`);
+}
+ 
 // PERBAIKAN: Fungsi nextLevel tanpa window.gameState
 function nextLevel() {
     if (userState.currentLevel < 5) {
@@ -538,22 +580,36 @@ function nextLevel() {
     }
 }
 
+/**
+ * Memeriksa apakah user diizinkan memainkan modul tertentu.
+ * Mendukung bypass untuk Admin (via Secret Trigger) dan Premium.
+ */
 function canPlayModule(moduleKey) {
-    // 1. Bypass untuk user Premium
+    // 1. PRIORITAS UTAMA: Mode Admin (Demo Mode)
+    if (window.isAdminMode) return true;
+
+    // 2. Bypass untuk user Premium
     if (userState.isPremium) return true;
 
-    // 2. Cek Nyawa
+    // 3. Cek Nyawa
     if (userState.lives <= 0) {
-        showPremiumWall("Nyawa Habis! Tunggu reset harian atau gunakan Premium.");
+        showPremiumWall("Nyawa Habis! Gunakan Premium untuk lanjut.");
         return false;
     }
 
-    // 3. Cek Limit Harian berdasarkan moduleKey (dictation, sentenceBuilder, dsb)
+    // 4. Cek Limit Harian & Progres
     const stats = userState.stats[moduleKey];
     if (stats) {
         if (stats.doneToday >= stats.dailyLimit) {
-            showPremiumWall(`Limit harian ${moduleKey.replace(/([A-Z])/g, ' $1')} tercapai!`);
+            showPremiumWall(`Limit harian ${moduleKey} tercapai!`);
             return false;
+        }
+        // Tambahan: Jika ini modul tenses, cek level
+        if (moduleKey === 'tenses' && typeof activeTense !== 'undefined' && activeTense) {
+            if (stats.unlockedLevel < activeTense.level) {
+                alert("Selesaikan level sebelumnya!");
+                return false;
+            }
         }
     }
 
@@ -565,10 +621,17 @@ function canPlayModule(moduleKey) {
  * Fungsi: Mengurangi nyawa dan memberikan feedback visual.
  */
 function handleWrong() {
-    // User premium tidak kehilangan nyawa
     if (userState.isPremium) return;
 
-    // Kurangi nyawa (tidak boleh di bawah 0)
+    // --- TAMBAHAN: Efek Suara Gagal ---
+    const errorSound = document.getElementById('sound-error');
+    if(errorSound) { errorSound.currentTime = 0; errorSound.play().catch(() => {}); }
+
+    // --- TAMBAHAN: Toast Notification Merah ---
+    if (typeof showToast === 'function') {
+        showToast("Jawaban Salah! Nyawa Berkurang.", "error");
+    }
+
     if (userState.lives > 0) {
         userState.lives--;
     }
@@ -598,29 +661,75 @@ function handleWrong() {
 }
 
 function saveUserData() {
+    // 1. Validasi data
+    if (!userState || typeof userState !== 'object') {
+        console.error("Gagal menyimpan: Data user tidak valid.");
+        return;
+    }
+
+    // 2. Simpan ke LocalStorage agar data tidak hilang saat refresh
     localStorage.setItem('linguaQuest_User', JSON.stringify(userState));
-    updateUI();
+    
+    // 3. Update Tampilan Stats Bar (Hati, Gem, Poin di atas)
+    if (typeof updateUI === 'function') {
+        updateUI();
+    }
+
+    // 4. TAMBAHAN: Update Tampilan Profil (XP Kumulatif & Progress Bar)
+    // Ini memastikan angka di tab profil selalu sama dengan data terbaru
+    if (typeof updateProfileUI === 'function') {
+        updateProfileUI();
+    }
+    
+    console.log("💾 Progress & Statistik Profil berhasil disinkronkan.");
 }
 
 function loadUserData() {
     const saved = localStorage.getItem('linguaQuest_User');
     if (saved) {
         const parsed = JSON.parse(saved);
+        
+        // Gabungkan data lama dengan yang tersimpan
         userState = Object.assign(userState, parsed);
+
+        // PROTEKSI: Jika user lama belum punya stats tenses, tambahkan secara otomatis
+        if (!userState.stats.tenses) {
+            userState.stats.tenses = { doneToday: 0, dailyLimit: 5 };
+            console.log("Stats Tenses diinisialisasi untuk user lama.");
+        }
     }
 }
 
 function checkDailyReset() {
     const today = new Date().toDateString();
+    
+    // Cek apakah hari ini berbeda dengan hari terakhir user aktif
     if (userState.lastActiveDate !== today) {
+        console.log("🌅 Hari baru dimulai! Mereset limit harian...");
+
+        // 1. Reset limit pengerjaan modul
         for (let key in userState.stats) {
-            userState.stats[key].doneToday = 0;
+            if (userState.stats[key] && typeof userState.stats[key] === 'object') {
+                userState.stats[key].doneToday = 0;
+            }
         }
+        
+        // 2. Reset limit iklan & aktivitas harian
+        userState.adsWatchedToday = 0; 
         userState.idiomsOpenedToday = 0;
         userState.vocabClaimedToday = false;
-        userState.adsWatchedToday = 0;
+        
+        // 3. Update tanggal terakhir aktif agar tidak reset berulang kali
         userState.lastActiveDate = today;
-        saveUserData();
+        
+        // 4. Bonus Harian: Kembalikan nyawa ke standar (5) jika di bawah itu
+        // Jika user punya nyawa > 5 (dari iklan kemarin), nyawa tetap aman (tidak dikurangi)
+        if (userState.lives < 5) {
+            userState.lives = 5;
+        }
+        
+        // 5. Simpan dan update tampilan secara menyeluruh
+        saveUserData(); 
     }
 }
 
@@ -662,14 +771,24 @@ function closeGame() {
 }
 
 function watchAdForLife() {
-    if (userState.adsWatchedToday >= 3) return alert("Jatah iklan habis.");
-    alert("Iklan dimulai...");
+    // 1. Cek jika jatah iklan sudah habis
+    if (userState.adsWatchedToday >= 3) {
+        // Tampilkan pesan langsung di dalam modal premium
+        showPremiumWall("Jatah iklan hari ini sudah habis (3/3). Aktifkan Premium untuk akses tanpa batas!");
+        return; 
+    }
+
+    // 2. Jika masih ada jatah, jalankan proses "Nonton Iklan"
+    showToast("Memulai iklan... (3 detik)", "info");
+    
     setTimeout(() => {
         userState.lives += 1;
-        userState.adsWatchedToday++;
-        saveUserData();
+        userState.adsWatchedToday += 1;
+        
+        saveUserData(); // Otomatis update UI dan simpan data
         closePremiumWall();
-        alert("+1 Nyawa Berhasil!");
+        
+        showToast("Berhasil! +1 Nyawa ditambahkan.", "success");
     }, 3000);
 }
 
@@ -702,12 +821,44 @@ function updateProfileUI() {
 
 function showPremiumWall(reason) {
     const modal = document.getElementById('premium-modal');
-    if (modal) {
-        document.getElementById('premium-reason').innerText = reason;
-        modal.style.display = 'flex';
-    } else {
-        alert(reason);
+    const reasonText = document.getElementById('premium-reason');
+    
+    if (!modal) return console.error("Elemen 'premium-modal' tidak ditemukan di HTML!");
+
+    if (reasonText) reasonText.innerText = reason;
+
+    // PENTING: Cari area konten di dalam modal untuk menaruh tombol
+    // Pastikan di index.html ada elemen dengan class 'premium-popup' atau 'theory-card'
+    const contentArea = modal.querySelector('.premium-popup') || modal.querySelector('.theory-card');
+    
+    if (contentArea) {
+        // 1. Bersihkan tombol lama agar tidak DOUBLE (Screenshot 144)
+        let oldActions = contentArea.querySelector('.premium-actions');
+        if (oldActions) oldActions.remove();
+
+        // 2. Buat kontainer baru
+        const actionButtons = document.createElement('div');
+        actionButtons.className = 'premium-actions';
+        actionButtons.style.width = "100%";
+        actionButtons.style.marginTop = "20px";
+
+        // 3. Isi dengan tombol yang benar (Integrasi Iklan & Premium)
+        actionButtons.innerHTML = `
+            <button class="btn-upgrade btn-ad" onclick="watchAdForLife()" style="width:100%; margin-bottom:10px; background:#4CAF50; color:white; border:none; padding:12px; border-radius:10px; cursor:pointer;">
+                <i class="fas fa-play-circle"></i> TONTON IKLAN (+1 ❤️)
+            </button>
+            <button class="btn-upgrade btn-premium" onclick="alert('Fitur Premium segera hadir!')" style="width:100%; background: #FFD700; color: #333; font-weight:bold; border:none; padding:12px; border-radius:10px; cursor:pointer;">
+                <i class="fas fa-crown"></i> AKTIFKAN PREMIUM
+            </button>
+            <button onclick="closePremiumWall()" style="width:100%; margin-top:10px; background:none; border:none; color:#666; cursor:pointer;">
+                NANTI SAJA
+            </button>
+        `;
+        
+        contentArea.appendChild(actionButtons);
     }
+
+    modal.style.display = 'flex';
 }
 
 function closePremiumWall() {
@@ -716,8 +867,36 @@ function closePremiumWall() {
 }
 
 function playSuccessSound() {
-    const audio = new Audio('https://www.soundjay.com/buttons/sounds/button-37.mp3'); 
-    audio.play().catch(e => console.log("Audio play blocked"));
+    const audio = document.getElementById('sound-success');
+    
+    if (audio) {
+        // Mengembalikan durasi ke nol agar bisa diputar berulang kali dengan cepat
+        audio.currentTime = 0; 
+        
+        audio.play().catch(e => {
+            // Memberikan pesan yang lebih informatif di konsol
+            console.warn("Audio play prevented by browser. User must interact with the page first.");
+        });
+    } else {
+        console.error("Elemen audio 'sound-success' tidak ditemukan di index.html");
+    }
+}
+
+/**
+ * Fungsi Terpusat untuk Memberikan Reward
+ */
+function addReward(xp = 0, gems = 0) {
+    userState.points += xp;
+    userState.gems += gems;
+    
+    // Simpan ke statistik kumulatif profil
+    if (!userState.stats.totalXP) userState.stats.totalXP = 0;
+    userState.stats.totalXP += xp;
+    
+    saveUserData();
+    updateUI();
+    
+    console.log(`Reward Berhasil: +${xp} XP, +${gems} Gems. Total XP Profil: ${userState.stats.totalXP}`);
 }
 
 // ==========================================
@@ -838,13 +1017,25 @@ function playVocabAudio(text) {
     
     window.speechSynthesis.speak(utterance);
 }
+
 // ==========================================
-// 11. ADDITIONAL UTILITIES & ACCESS CONTROL
+// 11. REVISED ACCESS CONTROL (SINKRON DENGAN ADMIN)
 // ==========================================
 function checkPremiumAccess(actionType) {
-    if (userState.isPremium) return true; 
+    const label = actionType ? actionType.toUpperCase() : "FITUR";
 
-    // Cek limit harian Dictation
+    // 1. BYPASS ADMIN (Prioritas Tertinggi)
+    if (window.isAdminMode) {
+        showToast(`ADMIN: Bypass Akses ${label}`, 'success');
+        return true;
+    }
+
+    // 2. BYPASS PREMIUM (User yang sudah bayar bebas akses)
+    if (userState.isPremium) return true;
+
+    // 3. CEK LIMIT HARIAN UNTUK USER GRATIS
+    
+    // A. Limit Dictation
     if (actionType === 'dictation') {
         const done = userState.stats.dictation?.doneToday || 0;
         const limit = userState.stats.dictation?.dailyLimit || 5;
@@ -854,11 +1045,19 @@ function checkPremiumAccess(actionType) {
         }
     }
     
-    // Cek limit harian Story
+    // B. Limit Story
     if (actionType === 'story') {
-        // Karena di data.js belum ada stats.story, kita asumsikan limit 1
         if ((userState.storyDoneToday || 0) >= 1) {
-            showPremiumWall("Limit membaca cerita harian tercapai.");
+            showPremiumWall("Limit membaca cerita harian tercapai. Upgrade Premium untuk akses tanpa batas!");
+            return false;
+        }
+    }
+
+    // C. Limit Tenses (Level Tinggi)
+    if (actionType.includes('tense_level_')) {
+        const level = parseInt(actionType.split('_').pop());
+        if (level > 1) { // Contoh: Level 2-5 adalah Premium
+            showPremiumWall(`Tenses Level ${level} adalah fitur Premium.`);
             return false;
         }
     }
@@ -906,7 +1105,7 @@ function startGlobalLevelExam() {
 function renderNextExamQuestion() {
     const state = window.examState;
     const data = state.questions[state.currentIndex];
-    const isDict = data.id && data.id.startsWith('d_'); // Cek jika ID diawali 'd_' (Dictation)
+    const isDict = data.id && typeof data.id === 'string' && data.id.startsWith('d_');
 
     const html = `
         <div class="theory-card" style="text-align:center;">
@@ -923,4 +1122,278 @@ function renderNextExamQuestion() {
         </div>
     `;
     openGameOverlay(html, "GLOBAL FINAL EXAM");
+}
+
+/**
+ * SATU FUNGSI UNTUK SEMUA: Menangani akses, menu, dan inisialisasi modul
+ */
+function startTenses() {
+    console.log("Memulai Modul Tenses...");
+
+    // 1. Prioritas Utama: Cek Akses (Admin/Premium/Limit)
+    // Fungsi checkPremiumAccess Anda sudah menangani bypass Admin
+    if (!checkPremiumAccess('tenses')) return;
+
+    // 2. Tutup Menu Level (Agar layar bersih)
+    const levelMenuView = document.getElementById('level-menu-view');
+    if (levelMenuView) {
+        levelMenuView.style.display = 'none';
+    }
+
+    // 3. Jalankan Tampilan Modul
+    // Pastikan ID 'game-overlay' dan 'tenses-module-ui' ada di index.html
+    const overlay = document.getElementById('game-overlay');
+    const tensesUI = document.getElementById('tenses-module-ui');
+
+        if (overlay && tensesUI) {
+        overlay.style.display = 'flex';
+        tensesUI.style.display = 'block';
+        
+        // Munculkan pilihan Tense (Present, Past, Future)
+        const selector = document.getElementById('tense-btns-container');
+        if (selector) selector.style.display = 'flex';
+        
+        // Sembunyikan card detail jika sebelumnya masih terbuka
+        const displayCard = document.getElementById('tense-display-card');
+        if (displayCard) displayCard.style.display = 'none';
+
+        showToast("Modul Tenses Terbuka", "success");
+    } else {
+        console.error("Elemen UI Tenses tidak ditemukan di HTML!");
+        alert("Terjadi kesalahan teknis pada tampilan.");
+    }
+}
+
+// FUNGSI NOTIFIKASI TOAST
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    const bgColor = type === 'success' ? '#4CAF50' : '#f44336'; // Hijau untuk sukses, Merah untuk gagal
+    
+    toast.style.cssText = `
+        background: ${bgColor};
+        color: white;
+        padding: 12px 25px;
+        border-radius: 50px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-weight: bold;
+        font-size: 0.9rem;
+        min-width: 150px;
+        text-align: center;
+        animation: slideInToast 0.3s ease-out, fadeOutToast 0.5s 2.5s forwards;
+    `;
+    
+    toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
+    container.appendChild(toast);
+
+    // Hapus otomatis setelah 3 detik
+    setTimeout(() => { toast.remove(); }, 3000);
+}
+
+// Tambahkan Animasi ke Header melalui JS agar index.html tetap bersih
+const toastStyle = document.createElement('style');
+toastStyle.innerHTML = `
+    @keyframes slideInToast {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes fadeOutToast {
+        to { opacity: 0; transform: translateY(-20px); }
+    }
+`;
+document.head.appendChild(toastStyle);
+
+// ==========================================
+// 12. TENSES MODULE INTEGRATION
+// ==========================================
+
+/**
+ * Memulai modul tenses dengan pengecekan akses
+ */
+function startTenses() {
+    // 1. Cek apakah user punya nyawa dan belum mencapai limit harian
+    if (!canPlayModule('tenses')) return;
+
+    // 2. Jika fungsi startTensesModule ada di tenses_logic.js, jalankan
+    if (typeof startTensesModule === 'function') {
+        startTensesModule();
+    } else {
+        console.error("File tenses_logic.js belum dimuat atau fungsi startTensesModule tidak ditemukan.");
+        alert("Modul Tenses sedang dalam perbaikan.");
+    }
+}
+
+/**
+ * Menangani pemberian XP khusus untuk pencapaian Tenses
+ */
+function awardTensesXP(bonus = 10) {
+    // Update State Global
+    userState.points += bonus;
+    userState.stats.tenses.doneToday++;
+    
+    // Feedback suara & visual
+    if (typeof playSuccessSound === 'function') playSuccessSound();
+    
+    // Simpan & Update UI
+    saveUserData();
+    updateUI();
+    
+    console.log(`Tenses Mastered! +${bonus} XP. Total hari ini: ${userState.stats.tenses.doneToday}`);
+}
+
+/**
+ * Menyediakan daftar subjek untuk dropdown atau validasi jika diperlukan
+ */
+const TENSES_SUBJECT_RULES = {
+    singular: ['he', 'she', 'it'],
+    plural: ['i', 'you', 'we', 'they'],
+    be_map: {
+        'i': 'am',
+        'he': 'is', 'she': 'is', 'it': 'is',
+        'you': 'are', 'we': 'are', 'they': 'are'
+    }
+};
+
+function closeGameOverlay() {
+    const overlay = document.getElementById('game-overlay');
+    if (overlay) {
+        overlay.style.display = 'none';
+        // Hentikan suara jika ada yang sedang bermain
+        if (typeof stopAllAudio === 'function') stopAllAudio();
+    }
+}
+// Pastikan bisa diakses secara global
+window.closeGameOverlay = closeGameOverlay;
+
+// ==========================================
+// CONFIGURATION
+// ==========================================
+/**
+ * Memeriksa apakah level tenses tertentu sudah terbuka.
+ * Otomatis terbuka jika Mode Admin aktif.
+ */
+function isLevelUnlocked(level) {
+    // 1. Jika Admin Mode aktif (via ketuk logo/keyboard), akses terbuka
+    if (window.isAdminMode === true) return true; 
+
+    // 2. Jika user Premium, semua level terbuka
+    if (userState.isPremium) return true;
+    
+    // 3. Logika asli untuk siswa umum (berdasarkan progres)
+    return userState.stats.tenses.unlockedLevel >= level;
+}
+
+// ==========================================
+// GLOBAL ADMIN & DEMO TOOLS (main.js)
+// ==========================================
+
+// Variabel status admin global agar canPlayModule() langsung memberikan akses
+window.isAdminMode = false; 
+
+// A. KEYBOARD SHORTCUT (Untuk Laptop/Desktop)
+window.addEventListener('keydown', function(e) {
+    // Ctrl + Shift + U: Unlock All
+    if (e.ctrlKey && e.shiftKey && e.key === 'U') {
+        activateAdminMode();
+    }
+    // Ctrl + Shift + R: Reset All
+    if (e.ctrlKey && e.shiftKey && e.key === 'R') {
+        resetUserProgress();
+    }
+});
+
+// B. TAP LOGO 10x (Untuk Mobile/HP di Play Store)
+let logoTapCount = 0;
+let lastTapTime = 0;
+
+document.addEventListener('click', function(e) {
+    // Cek apakah yang diklik adalah logo (ID: app-logo atau class: navbar-brand)
+    if (e.target.id === 'app-logo' || e.target.classList.contains('navbar-brand')) {
+        const currentTime = new Date().getTime();
+        if (currentTime - lastTapTime > 500) logoTapCount = 0; // Reset jika jeda terlalu lama
+
+        logoTapCount++;
+        lastTapTime = currentTime;
+
+        if (logoTapCount === 10) {
+            activateAdminMode();
+            logoTapCount = 0;
+        }
+    }
+});
+
+/**
+ * FUNGSI AKTIVASI ADMIN
+ */
+function activateAdminMode() {
+    if (confirm("🚀 Aktifkan Mode Admin?")) {
+        window.isAdminMode = true; 
+        
+        // Memastikan bypass akses premium di seluruh aplikasi
+        if (typeof userState !== 'undefined') {
+            userState.isPremium = true; 
+
+            if (userState.stats && userState.stats.tenses) {
+                userState.stats.tenses.unlockedLevel = 5;
+            }
+            
+            // Simpan perubahan ke penyimpanan lokal
+            if (typeof saveUserData === 'function') saveUserData();
+            
+            // Perbarui tampilan poin, nyawa, dan level di layar
+            if (typeof updateUI === 'function') updateUI();
+        }
+        
+        // Notifikasi visual menggunakan fungsi toast Anda
+        showToast("MODE ADMIN AKTIF: Akses Terbuka!", "success");
+    }
+}
+
+/**
+ * FUNGSI RESET DATA
+ */
+function resetUserProgress() {
+    if (confirm("Reset seluruh progres ke awal?")) {
+        window.isAdminMode = false;
+        userState.stats.tenses.unlockedLevel = 1;
+        userState.lives = 5;
+        // Tambahkan reset modul lain di sini jika ada
+        saveUserData();
+        location.reload();
+    }
+}
+
+function playFeedback(type) {
+    // 1. Logika Pemutar Suara (Terpusat)
+    const id = type === 'success' ? 'sound-success' : 'sound-error';
+    const audio = document.getElementById(id);
+    
+    if (audio) {
+        audio.currentTime = 0; // Reset agar suara bisa diputar berulang dengan cepat
+        audio.play().catch(() => {
+            // Memberikan peringatan di konsol jika browser memblokir auto-play
+            console.warn("Interaksi user diperlukan untuk suara."); 
+        });
+    }
+
+    // 2. Logika Notifikasi Visual (Toast)
+    // Tetap dijalankan meskipun audio gagal diputar
+    if (typeof showToast === 'function') {
+        if (type === 'success') {
+            showToast("Jawaban Benar!", "success");
+        } else {
+            showToast("Jawaban Salah! Periksa kembali.", "error");
+        }
+    }
+}
+
+function playErrorSound() {
+    const audio = document.getElementById('sound-error');
+    if (audio) {
+        audio.currentTime = 0;
+        audio.play().catch(e => console.warn("Audio play blocked: " + e.message));
+    }
 }

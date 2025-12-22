@@ -398,30 +398,40 @@ body {
 /* ==========================================
    BLOK 6: SUB-MENU LEVEL & STORY CARDS
    ========================================== */
-.sub-module-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    padding: 20px;
-}
+      .sub-module-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr); /* Membuat 2 kolom */
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .sub-card {
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    
+    .sub-card:active {
+        transform: scale(0.95);
+    }
 
-.sub-card {
-    background: white;
-    border: 2px solid var(--border-gray);
-    padding: 20px;
-    border-radius: 18px;
-    text-align: center;
-    cursor: pointer;
-    box-shadow: 0 4px 0 var(--border-gray);
-    transition: 0.1s;
-}
+    .sub-card i {
+        font-size: 2rem;
+    }
 
-.sub-card:active {
-    transform: translateY(2px);
-    box-shadow: 0 2px 0 var(--border-gray);
-}
-
-.sub-card i { font-size: 1.8rem; display: block; margin-bottom: 10px; color: var(--primary-blue); }
+    .sub-card span {
+        font-weight: bold;
+        font-size: 0.9rem;
+        color: #333;
+    }
 
 /* ==========================================
    BLOK 7: GAME OVERLAY & PROGRESS
@@ -495,6 +505,11 @@ body {
 @keyframes slideUp {
     from { transform: translateY(50px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
 }
 
 .btn-upgrade {
@@ -621,4 +636,88 @@ body {
 
 .theory-card {
     padding: 20px; /* Isi soal tetap punya jarak dari pinggir */
+}
+
+.tense-selector-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    padding: 20px;
+}
+
+.tense-btn {
+    background: white;
+    border: 2px solid #2196F3;
+    color: #2196F3;
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.tense-btn:hover {
+    background: #2196F3;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.tense-btn.active {
+    background: #2196F3;
+    color: white;
+}
+
+/* Container Tombol */
+.tense-selector {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+/* Style Tombol */
+.tense-selector button {
+    background: #ffffff;
+    border: 2px solid #3498db;
+    color: #3498db;
+    padding: 10px 20px;
+    border-radius: 50px; /* Membuat lonjong/pill style */
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+/* Efek saat kursor di atas tombol */
+.tense-selector button:hover {
+    background: #3498db;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.3);
+}
+
+.sandbox-input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 2px solid #eee;
+    border-radius: 10px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.sandbox-input:focus {
+    border-color: #3498db;
+}
+
+/* Membuat hasil teks menjadi lebih rapi */
+#sandbox-res p {
+    margin: 8px 0;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: bold;
 }
