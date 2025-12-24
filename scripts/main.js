@@ -46,10 +46,14 @@ window.userState = window.userState || {
         dictation: { doneToday: 0, dailyLimit: 5 },
         tenses: { doneToday: 0, dailyLimit: 5 },
         speaking: { doneToday: 0, dailyLimit: 5 },
-        indoglish: { doneToday: 0, dailyLimit: 5 }
+        indoglish: { doneToday: 0, dailyLimit: 5 },
+        idioms: { doneToday: 0, totalDone: 0 },
+        story: { doneToday: 0, dailyLimit: 1 }
     },
     collectedIdioms: [],
     idiomsOpenedToday: 0,
+    lastIdiomDate: "",     // Untuk mencatat kapan terakhir buka idiom
+    todayIdiom: null,      // Untuk menyimpan idiom pilihan hari ini
     lastActiveDate: ""
 };
 
@@ -216,6 +220,31 @@ function openIdiomPage() {
     `, "IDIOM EXPLORER");
 }
 
+function unlockDailyIdiom(idiomTarget) {
+    // 1. Cek apakah hari ini sudah buka idiom (Freemium only)
+    if (!userState.isPremium && userState.idiomsOpenedToday >= 1) {
+        showPremiumWall("Jatah idiom harian Anda sudah habis. Balik lagi besok atau aktifkan Premium!");
+        return;
+    }
+
+    // 2. Masukkan ke koleksi jika belum ada
+    if (!userState.collectedIdioms.includes(idiomTarget)) {
+        userState.collectedIdioms.push(idiomTarget);
+        
+        // Berikan hadiah XP "Kerja Keras" (Misal: 10 XP)
+        if (typeof addUniversalReward === 'function') {
+            addUniversalReward(10, 0); 
+        }
+    }
+
+    // 3. Update limit harian
+    userState.idiomsOpenedToday++;
+    saveUserData();
+    
+    // 4. Update tampilan profil agar idiom baru muncul
+    renderIdiomCollection();
+}
+
 /**
  * Menambah XP dari tantangan menulis kalimat
  */
@@ -240,29 +269,32 @@ function claimChallengeXP() {
  * Menampilkan koleksi idiom di grid profil
  */
 function renderIdiomCollection() {
-    const sourceData = window.dictionaryData || []; // Pastikan ada fallback array kosong
-    const item = sourceData.find(d => d.id === id);
-
     const listArea = document.getElementById('idiom-collection-list');
     if (!listArea) return;
 
-    // Ambil 9 koleksi terbaru
+    // Gunakan window.idiomData (sesuai file di scripts Bapak)
+    const sourceData = window.idiomData || []; 
+    
+    // 1. Ambil ID dari collectedIdioms di userState
     const latestIds = [...(userState.collectedIdioms || [])].reverse().slice(0, 9);
     
     if (latestIds.length === 0) {
-        listArea.innerHTML = `<p style="font-size:12px; color:#999; text-align:center;">Belum ada idiom yang dipelajari.</p>`;
+        listArea.innerHTML = `<p style="font-size:12px; color:#999; text-align:center;">Belum ada idiom harian.</p>`;
         return;
     }
 
+    // 2. Render ke Grid
     listArea.innerHTML = `
         <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:5px;">
             ${latestIds.map(id => {
-                // Cari data lengkap idiom berdasarkan ID-nya
-                const item = window.dictionaryData.find(d => d.id === id);
-                const title = item ? item.target : "Unknown";
+                // Cari data lengkap berdasarkan target (atau id)
+                const item = sourceData.find(d => d.target === id || d.id === id);
+                const title = item ? item.target : id;
+                
                 return `
-                    <div title="${title}" style="background:white; padding:8px 4px; font-size:10px; border:1px solid #eee; text-align:center; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.05); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                        ${title}
+                    <div title="${title}" style="background:white; padding:10px 4px; font-size:10px; border:1px solid #eee; text-align:center; border-radius:10px; box-shadow:0 2px 4px rgba(0,0,0,0.05); overflow:hidden; text-overflow:ellipsis;">
+                        <i class="fas fa-bookmark" style="color:#2196F3; display:block; margin-bottom:4px; font-size:12px;"></i>
+                        <div style="font-weight:bold; color:#333;">${title}</div>
                     </div>`;
             }).join('')}
         </div>`;
@@ -376,60 +408,83 @@ function checkSentence(correct) {
 // ==========================================
 // 7. DICTATION LOGIC (LOCAL DATA SYNC)
 // ==========================================
-/**
- * 1. Sinkronisasi Data (Pastikan Level Terkunci)
- */
-function syncDictationLocalData() {
-    window.dictationBank = []; 
-
-    const sources = [
-        { data: window.DICTATION_L1_SENTENCES, lv: 1 },
-        { data: window.DICTATION_L2_SENTENCES, lv: 2 },
-        { data: window.DICTATION_L3_SENTENCES, lv: 3 },
-        { data: window.DICTATION_L4_SENTENCES, lv: 4 },
-        { data: window.DICTATION_L5_SENTENCES, lv: 5 }
-    ];
-
-    sources.forEach(source => {
-        if (source.data && Array.isArray(source.data)) {
-            const formatted = source.data.map(row => ({
-                id: row[0],
-                level: Number(source.lv), // Pastikan ini Number
-                target: row[4],  
-                hint: row[5]     
-            }));
-            window.dictationBank.push(...formatted);
-        }
-    });
-    console.log("✅ Dictation Bank Ready. Level 1 count:", window.dictationBank.filter(s => s.level === 1).length);
+// Tambahkan fungsi pembantu untuk mengacak array (Fisher-Yates Shuffle)
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
 }
 
 /**
- * 2. Memulai Dictation (Filter Spesifik)
+ * FUNGSI PEMBANTU: Memuat file level secara otomatis jika belum ada
  */
-function startDictation() {
-    if (!window.dictationBank || window.dictationBank.length === 0) {
-        syncDictationLocalData();
-    }
-
-    if (typeof canPlayModule === 'function' && !canPlayModule('dictation')) return;
-
-    // AMBIL LEVEL DARI USER STATE DAN PAKSA JADI NUMBER
-    const currentLv = Number(userState.currentLevel) || 1;
-
-    // FILTER KETAT: Hanya soal yang levelnya sama persis
-    const available = window.dictationBank.filter(s => Number(s.level) === currentLv);
+async function loadDictationData(level) {
+    const varName = `DICTATION_L${level}_SENTENCES`;
     
-    if (available.length === 0) {
-        console.error("Filter gagal. Level dicari:", currentLv, "Data tersedia:", window.dictationBank);
-        return alert(`Soal untuk Level ${currentLv} tidak ditemukan.`);
+    // Jika data belum dimuat ke window, kita muat filenya sekarang
+    if (!window[varName]) {
+        console.log(`Memuat data Level ${level}...`);
+        return new Promise((resolve) => {
+            const script = document.createElement('script');
+            script.src = `scripts/dictation_L${level}_sentences.js`; // Pastikan path benar
+            script.onload = () => {
+                console.log(`Berhasil memuat 1000 kalimat Level ${level}`);
+                resolve(true);
+            };
+            script.onerror = () => {
+                console.error(`File dictation_L${level}_sentences.js tidak ditemukan!`);
+                resolve(false);
+            };
+            document.head.appendChild(script);
+        });
+    }
+    return true;
+}
+
+/**
+ * REVISI: Memulai Dictation (Mendukung 1000 soal per level)
+ */
+async function startDictation() {
+    // 1. Ambil level dan tentukan nama variabel data
+    const currentLv = Number(userState.currentLevel) || 1;
+    const varName = `DICTATION_L${currentLv}_SENTENCES`;
+
+    // 2. Cek apakah data tersedia
+    if (!window[varName] || !Array.isArray(window[varName])) {
+        return alert(`Bank soal Level ${currentLv} tidak ditemukan.`);
     }
 
-    // Ambil acak hanya dari hasil filter tersebut
-    const data = available[Math.floor(Math.random() * available.length)];
-    const safeTarget = encodeURIComponent(data.target);
+    // 3. Ambil data mentah
+    let rawData = window[varName];
 
-    // TAMPILAN UI
+    // Jika data Bapak terbungkus extra kurung siku [[ [...], [...] ]]
+    // kita bongkar dulu agar menjadi daftar soal yang bersih
+    const cleanData = rawData.flat(window[varName][0] && Array.isArray(window[varName][0][0]) ? 1 : 0);
+
+    // 4. Pilih satu soal secara acak dari 1000 soal
+    const randomIndex = Math.floor(Math.random() * cleanData.length);
+    const selectedRow = cleanData[randomIndex];
+
+    // 5. VALIDASI & EKSTRAKSI (Inti Perbaikan)
+    if (!selectedRow || !Array.isArray(selectedRow)) {
+        console.error("Format baris salah:", selectedRow);
+        return alert("Terjadi kesalahan pada format data soal.");
+    }
+
+    // Ambil Index 4 untuk Inggris, Index 5 untuk Arti
+    const englishSentence = String(selectedRow[4] || "").trim();
+    const indonesianHint = String(selectedRow[5] || "").trim();
+
+    // Pastikan kalimat Inggrisnya ada
+    if (!englishSentence) {
+        return alert("Kalimat bahasa Inggris tidak ditemukan di baris ini.");
+    }
+
+    const safeTarget = encodeURIComponent(englishSentence);
+
+    // 6. TAMPILAN UI
     const htmlContent = `
         <div class="theory-card" style="text-align:center">
             <div style="display:flex; justify-content:space-between; margin-bottom:15px; font-size:0.8rem; color:#666;">
@@ -446,7 +501,9 @@ function startDictation() {
                 </button>
             </div>
 
-            <p style="font-size:1rem; color:#555; margin-bottom:15px;"><i>"${data.hint}"</i></p>
+            <p style="font-size:1.1rem; color:#333; margin-bottom:15px; font-weight:500;">
+                "${indonesianHint}"
+            </p>
             
             <textarea id="dictation-input" placeholder="Tulis kalimat yang Anda dengar..." 
                 style="width:100%; height:80px; padding:12px; border-radius:12px; border:2px solid #ddd;"></textarea>
@@ -459,7 +516,11 @@ function startDictation() {
     `;
 
     openGameOverlay(htmlContent, "DICTATION LV " + currentLv);
-    setTimeout(() => playVoice(data.target, 0.8), 500);
+    
+    // Play voice otomatis kalimat Inggrisnya saja
+    setTimeout(() => {
+        if (typeof playVoice === 'function') playVoice(englishSentence, 0.8);
+    }, 500);
 }
 
 /**
@@ -703,11 +764,10 @@ function loadUserData() {
 function checkDailyReset() {
     const today = new Date().toDateString();
     
-    // Cek apakah hari ini berbeda dengan hari terakhir user aktif
     if (userState.lastActiveDate !== today) {
         console.log("🌅 Hari baru dimulai! Mereset limit harian...");
 
-        // 1. Reset limit pengerjaan modul
+        // 1. Reset limit pengerjaan modul (Termasuk Idiom Challenge)
         for (let key in userState.stats) {
             if (userState.stats[key] && typeof userState.stats[key] === 'object') {
                 userState.stats[key].doneToday = 0;
@@ -718,17 +778,21 @@ function checkDailyReset() {
         userState.adsWatchedToday = 0; 
         userState.idiomsOpenedToday = 0;
         userState.vocabClaimedToday = false;
+
+        // --- TAMBAHAN UNTUK IDIOM ---
+        userState.lastIdiomDate = ""; // Reset agar openIdiomPage mengacak idiom baru
+        userState.todayIdiom = null;  // Hapus idiom kemarin
+        // ----------------------------
         
-        // 3. Update tanggal terakhir aktif agar tidak reset berulang kali
+        // 3. Update tanggal terakhir aktif
         userState.lastActiveDate = today;
         
-        // 4. Bonus Harian: Kembalikan nyawa ke standar (5) jika di bawah itu
-        // Jika user punya nyawa > 5 (dari iklan kemarin), nyawa tetap aman (tidak dikurangi)
+        // 4. Bonus Harian Nyawa
         if (userState.lives < 5) {
             userState.lives = 5;
         }
         
-        // 5. Simpan dan update tampilan secara menyeluruh
+        // 5. Simpan dan update tampilan
         saveUserData(); 
     }
 }
@@ -831,31 +895,31 @@ function showPremiumWall(reason) {
         return console.error("Elemen 'premium-modal' tidak ditemukan di HTML!");
     }
 
-    // Set pesan alasan (misal: "Limit membaca cerita harian tercapai")
     if (reasonText) {
         reasonText.innerText = reason;
     }
 
-    // Mencari area konten utama di dalam modal
     const contentArea = modal.querySelector('.premium-popup') || modal.querySelector('.theory-card');
     
     if (contentArea) {
-        /**
-         * LOGIKA ANTI-DOUBLE:
-         * Menghapus semua elemen aksi yang mungkin sudah ada sebelumnya 
-         * baik dari HTML statis maupun injeksi JS sebelumnya.
-         */
         const existingActions = contentArea.querySelectorAll('.premium-actions');
         existingActions.forEach(el => el.remove());
 
-        // Membuat kontainer tombol aksi yang baru
         const actionButtons = document.createElement('div');
         actionButtons.className = 'premium-actions';
         actionButtons.style.width = "100%";
         actionButtons.style.marginTop = "20px";
 
-        // Mengisi tombol: Tonton Iklan, Aktifkan Premium, dan Nanti Saja
+        // Cek apakah user punya cukup gems untuk tombol (opsional untuk styling)
+        const canAfford = userState.gems >= 15;
+
+        // ISI TOMBOL DI SINI
         actionButtons.innerHTML = `
+            <button onclick="useGemsForLife()" 
+                style="width:100%; margin-bottom:12px; background:#9C27B0; color:white; border:none; padding:14px; border-radius:12px; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:10px; cursor:${canAfford ? 'pointer' : 'not-allowed'}; opacity:${canAfford ? 1 : 0.6};">
+                <i class="fas fa-gem"></i> TUKAR 15 GEMS (+3 ❤️)
+            </button>
+
             <button class="btn-upgrade btn-ad" onclick="watchAdForLife()" 
                 style="width:100%; margin-bottom:10px; background:#4CAF50; color:white; border:none; padding:12px; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px;">
                 <i class="fas fa-play-circle"></i> TONTON IKLAN (+1 ❤️)
@@ -875,7 +939,6 @@ function showPremiumWall(reason) {
         contentArea.appendChild(actionButtons);
     }
 
-    // Tampilkan modal dengan CSS Flex agar posisi di tengah
     modal.style.display = 'flex';
 }
 
