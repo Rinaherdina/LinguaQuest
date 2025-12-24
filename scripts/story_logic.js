@@ -76,18 +76,28 @@ async function startStoryMode() {
  * HELPER: Highlight Kata (Sesuai VOCAB_MASTER Anda)
  */
 function highlightVocab(text) {
-    if (!window.VOCAB_MASTER) return text;
+    // 1. Proteksi jika data tidak ada
+    if (!window.VOCAB_MASTER || !text) return text;
+    
     const levelKey = "LV" + (window.userState.currentLevel || 1);
     const currentVocab = window.VOCAB_MASTER[levelKey] || [];
     
     let highlightedText = text;
-    currentVocab.forEach(item => {
-        const regex = new RegExp(`\\b${item.word}\\b`, 'gi');
-        // Memberikan tooltip sederhana saat hover (native title)
-        highlightedText = highlightedText.replace(regex, 
-            `<span title="${item.meaning}" style="color:#4f46e5; font-weight:bold; border-bottom:2px solid #c7d2fe; cursor:help;">$&</span>`
-        );
+
+    // 2. Urutkan vocab dari yang terpanjang ke terpendek
+    // Penting! Agar "Ice Cream" di-highlight lebih dulu sebelum kata "Ice"
+    const sortedVocab = [...currentVocab].sort((a, b) => b.word.length - a.word.length);
+    
+    sortedVocab.forEach(item => {
+        // Regex: \b (batas kata), gi (global & case insensitive), 
+        // dan (?![^<]*>) memastikan tidak mengganti teks di dalam tag HTML
+        const regex = new RegExp(`\\b${item.word}\\b(?![^<]*>)`, 'gi');
+        
+        highlightedText = highlightedText.replace(regex, (matched) => {
+            return `<span title="${item.meaning}" style="color:#4f46e5; font-weight:bold; border-bottom:2px solid #c7d2fe; cursor:help;">${matched}</span>`;
+        });
     });
+
     return highlightedText;
 }
 
@@ -165,27 +175,51 @@ function checkStoryAnswer(selectedIndex) {
 
     const isCorrect = selectedIndex === q.ans;
 
+    // Persiapan variabel untuk pesan umpan balik
+    let feedbackContent = "";
+
     if (isCorrect) {
-        storyScore++;
-        feedbackDiv.innerHTML = `<div style="color: #166534; background: #f0fdf4; padding: 15px; border-radius: 10px; border: 1px solid #bbf7d0;">
-            <strong>✨ Benar!</strong><br>${q.hint || "Bagus sekali!"}
-        </div>`;
+        storyScore++; // Menambah skor lokal untuk kalkulasi akhir
+        feedbackContent = `
+            <div style="color: #166534; background: #f0fdf4; padding: 15px; border-radius: 10px; border: 1px solid #bbf7d0;">
+                <strong>✨ Benar! (+5 XP)</strong>`;
+        
         buttons[selectedIndex].style.borderColor = '#22c55e';
         buttons[selectedIndex].style.background = '#f0fdf4';
     } else {
-        feedbackDiv.innerHTML = `<div style="color: #991b1b; background: #fef2f2; padding: 15px; border-radius: 10px; border: 1px solid #fecaca;">
-            <strong>❌ Kurang Tepat</strong><br>Jawaban benar: <b>${q.opt[q.ans]}</b>. ${q.hint || ""}
-        </div>`;
+        feedbackContent = `
+            <div style="color: #991b1b; background: #fef2f2; padding: 15px; border-radius: 10px; border: 1px solid #fecaca;">
+                <strong>❌ Kurang Tepat</strong><br>
+                Jawaban benar: <b>${q.opt[q.ans]}</b>`;
+        
         buttons[selectedIndex].style.borderColor = '#ef4444';
         buttons[q.ans].style.borderColor = '#22c55e'; 
     }
 
+    // --- BLOK PENJELASAN GURU (PREMIUM ONLY) ---
+    if (window.userState && window.userState.isPremium) {
+        // Jika user premium, tampilkan isi q.hint
+        feedbackContent += `
+            <hr style="margin: 10px 0; border: 0; border-top: 1px solid #ccc; opacity: 0.3;">
+            <p style="font-size: 0.9rem; color: #1e293b; line-height: 1.4;">
+                <strong>👨‍🏫 Penjelasan Guru:</strong><br>${q.hint || "Pilihan ini tepat berdasarkan konteks teks di atas."}
+            </p>`;
+    } else {
+        // Jika user gratis, tampilkan pesan terkunci
+        feedbackContent += `
+            <div style="margin-top: 10px; padding: 10px; background: #fffbeb; border-radius: 8px; font-size: 0.8rem; border: 1px dashed #fcd34d; color: #92400e;">
+                🔒 <i>Penjelasan Guru hanya tersedia untuk member <b>Premium</b>.</i>
+            </div>`;
+    }
+
+    feedbackContent += `</div>`;
+    feedbackDiv.innerHTML = feedbackContent;
     feedbackDiv.style.display = 'block';
 
-    // Tombol Lanjut
+    // Tombol Lanjut (Logika navigasi tetap sama)
     const nextBtn = document.createElement('button');
     nextBtn.className = "btn-upgrade btn-premium";
-    nextBtn.style.cssText = "margin-top: 20px; width: 100%; padding: 15px; font-weight: bold;";
+    nextBtn.style.cssText = "margin-top: 20px; width: 100%; padding: 15px; font-weight: bold; cursor: pointer;";
     nextBtn.innerText = currentQuestionIndex < currentStoryData.questions.length - 1 ? "SOAL BERIKUTNYA" : "LIHAT HASIL AKHIR";
     
     nextBtn.onclick = () => {
@@ -200,29 +234,50 @@ function checkStoryAnswer(selectedIndex) {
 }
 
 function finishStoryMode() {
-    const totalXP = storyScore * 20; 
-
-    // GANTI: Panggil fungsi dari main.js untuk memproses reward & nyawa
-    if (typeof processStoryReward === 'function') {
-        processStoryReward(storyScore, currentStoryData.questions.length);
+    // 1. Hitung XP Baru (5 XP per soal benar, bukan 20)
+    const xpGained = storyScore * 5; 
+    
+    // 2. Hitung Bonus Gems untuk tampilan (Logika detail ada di processStoryReward)
+    let gemsGained = 0;
+    const totalQuestions = currentStoryData.questions.length;
+    
+    if (storyScore === totalQuestions) {
+        gemsGained = 3; // Bonus Perfect
+    } else if (storyScore >= 3) {
+        gemsGained = 1; // Bonus Lulus
     }
 
+    // 3. Panggil fungsi inti di main.js untuk update database & state
+    if (typeof processStoryReward === 'function') {
+        processStoryReward(storyScore, totalQuestions);
+    }
+
+    // 4. Tampilkan Overlay Hasil dengan UI Reward baru
     openGameOverlay(`
         <div class="theory-card" style="text-align: center; padding: 40px 20px;">
             <div style="font-size: 5rem; margin-bottom: 10px;">🏆</div>
             <h2 style="color:#1e293b">Misi Selesai!</h2>
             <p style="font-size: 1.1rem; color:#64748b; margin-bottom: 25px;">
                 Hasil pemahaman bacaan Anda:<br>
-                <strong style="font-size: 1.5rem; color:#4f46e5;">${storyScore} / ${currentStoryData.questions.length}</strong> Benar
+                <strong style="font-size: 1.5rem; color:#4f46e5;">${storyScore} / ${totalQuestions}</strong> Benar
             </p>
           
-            <div style="background: #fffbeb; padding: 20px; border-radius: 15px; margin-bottom: 30px; border: 1px dashed #fcd34d;">
-                <span style="display:block; font-size:0.9rem; color:#92400e; font-weight:bold;">REWARD</span>
-                <span style="font-size: 2.2rem; font-weight: bold; color: #d97706;">+${totalXP} XP</span>
+            <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 30px;">
+                <div style="flex: 1; background: #f0f9ff; padding: 15px; border-radius: 15px; border: 1px solid #bae6fd;">
+                    <span style="display:block; font-size:0.8rem; color:#0369a1; font-weight:bold;">XP DIDAPAT</span>
+                    <span style="font-size: 1.8rem; font-weight: bold; color: #0284c7;">+${xpGained}</span>
+                </div>
+                
+                ${gemsGained > 0 ? `
+                <div style="flex: 1; background: #fff1f2; padding: 15px; border-radius: 15px; border: 1px solid #fecdd3;">
+                    <span style="display:block; font-size:0.8rem; color:#be123c; font-weight:bold;">GEMS</span>
+                    <span style="font-size: 1.8rem; font-weight: bold; color: #e11d48;">+${gemsGained} 💎</span>
+                </div>
+                ` : ''}
             </div>
 
-            <button class="btn-upgrade btn-premium" style="width:100%; padding:18px; font-weight:bold;" onclick="closeGame()">
-                KLAIM XP & KEMBALI
+            <button class="btn-upgrade btn-premium" style="width:100%; padding:18px; font-weight:bold;" onclick="location.reload()">
+                KLAIM REWARD & KEMBALI
             </button>
         </div>
     `);

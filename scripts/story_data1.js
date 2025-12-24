@@ -1,248 +1,254 @@
-/**
- * LINGUAQUEST - STORY BANK MASTER
- * Format: 1 Teks Panjang + 5 Soal + Penjelasan
- * Tenses: Present, Past, Future
- */
+window.STORY_BANK = window.STORY_BANK || [];
 
-window.STORY_BANK = [
-    // ==========================================
-    // 1. SIMPLE PRESENT (TEKS 1 - DAILY ROUTINE)
-    // ==========================================
+const lv1Stories = [
+    // 1. DAILY ROUTINE (Present Tense)
     {
-        id: "st_pr_01",
+        id: "lv1_reading_01",
         level: 1,
-        tense: "present",
-        title: "The Diligent Student",
-        content: "Every morning, Budi wakes up early at 5 AM. He is a diligent <abbr title='Murid'>student</abbr> who loves his <abbr title='Sekolah'>school</abbr>. First, he drinks a glass of <abbr title='Air'>water</abbr> and cleans his <abbr title='Kamar tidur'>bedroom</abbr>. Then, he takes a bath and wears his <abbr title='Seragam'>uniform</abbr>. His <abbr title='Ibu'>mother</abbr> always cooks a healthy <abbr title='Sarapan'>breakfast</abbr> like <abbr title='Nasi'>rice</abbr> and <abbr title='Telur'>eggs</abbr> in the <abbr title='Dapur'>kitchen</abbr>. Budi eats his breakfast slowly because he does not want to be late. After that, he takes his <abbr title='Tas'>bag</abbr> and goes to school by <abbr title='Sepeda'>bike</abbr>. He arrives at school at 6:45 AM and greets his <abbr title='Guru'>teacher</abbr> with a big <abbr title='Senyum'>smile</abbr>.",
+        tense: "simple present",
+        title: "My Daily Life",
+        content: "Every morning, I wake up and drink a glass of water. My mother cooks breakfast in the kitchen while my father reads a book. I am a student, so I go to school with my friend. At school, we study English and learn many things. My teacher is very smart and kind. We like to play in the park after class. In the evening, I finish my homework and sleep early.",
         questions: [
-            {
-                q: "What is the first thing Budi does after waking up?",
-                opt: ["Takes a bath", "Drinks water", "Eats breakfast", "Cleans bedroom"],
-                ans: 1,
-                hint: "Check the word 'First' in the text."
-            },
-            {
-                q: "Where does his mother cook breakfast?",
-                opt: ["In the garden", "In the bedroom", "In the kitchen", "In the shop"],
-                ans: 2,
-                hint: "Look for the place where people cook."
-            },
-            {
-                q: "How does Budi go to school?",
-                opt: ["By bus", "By car", "By bike", "On foot"],
-                ans: 2,
-                hint: "Find the transport mentioned in the end."
-            },
-            {
-                q: "What does he wear after taking a bath?",
-                opt: ["Shoes", "Hat", "Uniform", "Watch"],
-                ans: 2,
-                hint: "Something students wear for school."
-            },
-            {
-                q: "What time does he arrive at school?",
-                opt: ["5:00 AM", "6:00 AM", "6:45 AM", "7:00 AM"],
-                ans: 2,
-                hint: "Check the numbers in the last paragraph."
-            }
-        ]
-    }, 
+            { q: "What does the writer drink in the morning?", opt: ["Milk", "Coffee", "Water", "Tea"], ans: 2, hint: "Look at the first sentence." },
+            { q: "Where does the mother cook breakfast?", opt: ["Bedroom", "Kitchen", "Garden", "Office"], ans: 1, hint: "Kitchen is for cooking." },
+            { q: "Who is smart and kind?", opt: ["The friend", "The father", "The teacher", "The dog"], ans: 2, hint: "Check the description of the teacher." },
+            { q: "What do they do in the park?", opt: ["Study", "Sleep", "Play", "Read"], ans: 2, hint: "They like to play." },
+            { q: "When does the writer finish homework?", opt: ["Morning", "Afternoon", "Evening", "Night"], ans: 2, hint: "Check the last sentence." }
+        ],
+        reward: 20
+    },
 
-    // ==========================================
-    // 2. SIMPLE PAST (TEKS 2 - LAST VACATION)
-    // ==========================================
+    // 2. YESTERDAY'S TRIP (Past Tense)
     {
-        id: "st_pa_01",
+        id: "lv1_reading_02",
+        level: 1,
+        tense: "simple past",
+        title: "A Trip to the Beach",
+        content: "Yesterday, my family went to the beach. The sky was blue and the sun was hot. My brother and I swam in the water. My father sat on a chair and watched us. We brought some bread and apples for lunch. My sister drew a beautiful picture on the sand. We felt very happy because the place was quiet and clean. We went home in the afternoon.",
+        questions: [
+            { q: "Where did the family go yesterday?", opt: ["School", "Market", "Beach", "Hospital"], ans: 2, hint: "Check the title or first sentence." },
+            { q: "How was the sun?", opt: ["Cold", "Hot", "Small", "Dark"], ans: 1, hint: "Sun usually makes things hot." },
+            { q: "What did they eat for lunch?", opt: ["Rice and fish", "Bread and apples", "Meat and egg", "Cake"], ans: 1, hint: "Look for food names." },
+            { q: "Who drew a picture on the sand?", opt: ["The brother", "The sister", "The mother", "The teacher"], ans: 1, hint: "Check the sister's action." },
+            { q: "Why were they happy?", opt: ["Because it was noisy", "Because it was expensive", "Because it was quiet and clean", "Because it was far"], ans: 2, hint: "Look for 'quiet and clean'." }
+        ],
+        reward: 20
+    },
+
+    // 3. FUTURE PLANS (Future Tense)
+    {
+        id: "lv1_reading_03",
+        level: 1,
+        tense: "simple future",
+        title: "Next Holiday Plans",
+        content: "Next week, I will visit my grandfather in the town. I will go there by bus. I will bring a new shirt for him. We will walk in his large garden and see many flowers. My grandfather will show me how to plant a tree. I hope the weather will be bright. It will be a perfect holiday for me.",
+        questions: [
+            { q: "When will the writer visit the grandfather?", opt: ["Today", "Yesterday", "Next week", "Next month"], ans: 2, hint: "Future time marker." },
+            { q: "How will the writer go there?", opt: ["By car", "By bus", "By bike", "By train"], ans: 1, hint: "Check the transport." },
+            { q: "What will the writer bring?", opt: ["A book", "A new shirt", "A bag", "A watch"], ans: 1, hint: "Look for 'shirt'." },
+            { q: "What will they do in the garden?", opt: ["Run", "Sleep", "Walk and see flowers", "Eat"], ans: 2, hint: "Garden activities." },
+            { q: "What is the writer's hope?", opt: ["Bright weather", "Rainy day", "New shoes", "Many money"], ans: 0, hint: "Check 'I hope...'." }
+        ],
+        reward: 20
+    },
+
+    // 4. AT THE MARKET (Present Tense)
+    {
+        id: "lv1_reading_04",
+        level: 1,
+        tense: "simple present",
+        title: "Helping Mother",
+        content: "Today is Sunday. I help my mother at the market. The market is very busy and noisy. Mother wants to buy some meat, fish, and vegetables. I carry a big bag for her. Everything is cheap here. We also see a fruit shop. I want an orange, but mother gives me a red apple. I am hungry, so I want to go home and cook.",
+        questions: [
+            { q: "What day is it today?", opt: ["Monday", "Friday", "Sunday", "Saturday"], ans: 2, hint: "First sentence." },
+            { q: "How is the market?", opt: ["Quiet", "Busy and noisy", "Empty", "Clean"], ans: 1, hint: "Market description." },
+            { q: "What does the writer carry?", opt: ["A small pen", "A big bag", "A chair", "A bottle"], ans: 1, hint: "Check the writer's action." },
+            { q: "What fruit does the mother give?", opt: ["Orange", "Banana", "Red apple", "Grape"], ans: 2, hint: "Look for the fruit color." },
+            { q: "Why does the writer want to go home?", opt: ["Tired", "Sad", "Hungry", "Bored"], ans: 2, hint: "Check the last sentence." }
+        ],
+        reward: 20
+    },
+
+    // 5. THE NEW CAT (Past Tense)
+    {
+        id: "lv1_reading_05",
+        level: 1,
+        tense: "simple past",
+        title: "A Lucky Day",
+        content: "Last night, I heard a sound outside my door. I opened the window and looked down. I saw a small cat. It was wet and cold because of the rain. I felt sorry for the cat, so I brought it inside. I gave it some warm milk and a soft towel. The cat stopped crying and fell asleep. I called it 'Lucky'.",
+        questions: [
+            { q: "When did the story happen?", opt: ["This morning", "Last night", "Yesterday afternoon", "Two days ago"], ans: 1, hint: "Time marker." },
+            { q: "Why was the cat wet and cold?", opt: ["Because of the sun", "Because of the rain", "Because of the wind", "Because it swam"], ans: 1, hint: "Weather condition." },
+            { q: "What did the writer give to the cat?", opt: ["Water", "Warm milk and a towel", "Bread", "A toy"], ans: 1, hint: "Look for cat's food/drink." },
+            { q: "What did the cat do after drinking milk?", opt: ["Ran away", "Jumped", "Fell asleep", "Played"], ans: 2, hint: "Last part of the story." },
+            { q: "What is the cat's name?", opt: ["Happy", "Star", "Lucky", "Buddy"], ans: 2, hint: "Check the last sentence." }
+        ],
+        reward: 20
+    },
+
+    // 6. SCHOOL DOCTOR (Present Tense)
+    {
+        id: "lv1_reading_06",
+        level: 1,
+        tense: "simple present",
+        title: "The School Clinic",
+        content: "My sister is a nurse at the hospital, but today she visits my school. She talks to the students about health. She says we need to wash our hands and brush our teeth every day. If we feel sick, we must tell a teacher or a doctor. Eating fruit is good for the body. I think her job is very important because she helps many people.",
+        questions: [
+            { q: "What is the sister's job?", opt: ["Teacher", "Doctor", "Nurse", "Chef"], ans: 2, hint: "Check her profession." },
+            { q: "What must we do every day?", opt: ["Sleep in class", "Wash hands and brush teeth", "Buy toys", "Run fast"], ans: 1, hint: "Health advice." },
+            { q: "What should we do if we feel sick?", opt: ["Cry", "Tell a teacher or doctor", "Go home alone", "Read a book"], ans: 1, hint: "Check the advice for sick people." },
+            { q: "What food is good for the body?", opt: ["Sugar", "Salt", "Fruit", "Coffee"], ans: 2, hint: "Look for healthy food." },
+            { q: "Why is her job important?", opt: ["She is famous", "She is rich", "She helps people", "She is beautiful"], ans: 2, hint: "Check the last sentence." }
+        ],
+        reward: 20
+    },
+
+    // 7. LEARNING TO DRIVE (Future Tense)
+    {
+        id: "lv1_reading_07",
+        level: 1,
+        tense: "simple future",
+        title: "Future Skill",
+        content: "When I am older, I will learn how to drive a car. My father will teach me on the road near our house. I will be very careful and slow at first. I will use a blue car because it is my favorite color. I will also take my friends to the city. I hope I will be a good driver and pass the test easily.",
+        questions: [
+            { q: "What will the writer learn?", opt: ["To swim", "To drive a car", "To cook", "To sing"], ans: 1, hint: "Look for 'drive'." },
+            { q: "Who will teach the writer?", opt: ["Mother", "Teacher", "Father", "Brother"], ans: 2, hint: "The person teaching." },
+            { q: "What color car will the writer use?", opt: ["Red", "Green", "Blue", "Black"], ans: 2, hint: "Favorite color." },
+            { q: "Where will the writer take the friends?", opt: ["To the beach", "To the city", "To the park", "To the school"], ans: 1, hint: "Check the destination." },
+            { q: "What is the writer's hope for the test?", opt: ["To fail", "To pass easily", "To be late", "To be angry"], ans: 1, hint: "Last sentence." }
+        ],
+        reward: 20
+    },
+
+    // 8. THE BUSY CHEF (Present Tense)
+    {
+        id: "lv1_reading_08",
+        level: 1,
+        tense: "simple present",
+        title: "Inside the Kitchen",
+        content: "Mr. Tan is a chef in a big restaurant. He is always busy. Every morning, he cleans the kitchen and checks the meat and fish. He uses a sharp knife to cut the vegetables. He cooks many delicious songs—no, he cooks many delicious meals. People love his food because it is never bitter or sour. He is a very famous man in this town.",
+        questions: [
+            { q: "Where does Mr. Tan work?", opt: ["School", "Bank", "Restaurant", "Hospital"], ans: 2, hint: "A chef works here." },
+            { q: "What does he do every morning?", opt: ["Sleep", "Cleans the kitchen", "Buys a car", "Plays a game"], ans: 1, hint: "Chef's morning routine." },
+            { q: "What tool does he use to cut vegetables?", opt: ["Pen", "Spoon", "Knife", "Desk"], ans: 2, hint: "Tool for cutting." },
+            { q: "How is the taste of his food?", opt: ["Bitter", "Sour", "Delicious", "Bad"], ans: 2, hint: "Check the description of food." },
+            { q: "Is Mr. Tan famous?", opt: ["No", "Yes", "Maybe", "He is poor"], ans: 1, hint: "Last sentence." }
+        ],
+        reward: 20
+    },
+
+    // 9. A NEW HOME (Past Tense)
+    {
+        id: "lv1_reading_09",
+        level: 1,
+        tense: "simple past",
+        title: "Moving House",
+        content: "Last month, my family moved to a new house. The house was big and had many windows. I had a small room, but it was very bright. We put a table and a chair near the window. My brother helped me carry the boxes. We washed the floor and cleaned the walls. We stayed there for the first night and felt very safe.",
+        questions: [
+            { q: "When did the family move?", opt: ["Last week", "Last month", "Last year", "Yesterday"], ans: 1, hint: "Check the time marker." },
+            { q: "How was the house?", opt: ["Small", "Big with many windows", "Dirty", "Old"], ans: 1, hint: "Check the house description." },
+            { q: "What was near the window?", opt: ["A bed", "A table and chair", "A lamp", "A cat"], ans: 1, hint: "Look for furniture names." },
+            { q: "What did the brother do?", opt: ["He slept", "He helped carry boxes", "He cooked", "He sang"], ans: 1, hint: "Check brother's action." },
+            { q: "How did they feel on the first night?", opt: ["Scared", "Sad", "Safe", "Hungry"], ans: 2, hint: "Check the last word." }
+        ],
+        reward: 20
+    },
+
+    // 10. COMPUTER CLASS (Future Tense)
+    {
+        id: "lv1_reading_10",
+        level: 1,
+        tense: "simple future",
+        title: "The New Computer",
+        content: "Tomorrow, my father will buy a new computer for me. I will use it for my study. I will learn how to write a song and draw a picture on it. My sister will borrow it sometimes to watch a movie. We will keep the computer clean and safe. I will be very happy and work hard with my new computer.",
+        questions: [
+            { q: "When will the father buy the computer?", opt: ["Today", "Tomorrow", "Next week", "Yesterday"], ans: 1, hint: "Look at the first word." },
+            { q: "What will the writer do with the computer first?", opt: ["Play games", "Use it for study", "Sell it", "Sleep"], ans: 1, hint: "Check 'use it for...'." },
+            { q: "What will the writer learn on the computer?", opt: ["To cook", "To write a song and draw", "To swim", "To drive"], ans: 1, hint: "Check the activities." },
+            { q: "What will the sister do with it?", opt: ["Wash it", "Borrow it to watch a movie", "Break it", "Give it away"], ans: 1, hint: "Check sister's plan." },
+            { q: "How will they keep the computer?", opt: ["Dirty", "Clean and safe", "Old", "Empty"], ans: 1, hint: "Check the maintenance plan." }
+        ],
+        reward: 20
+    },
+    {
+        id: "st_pa_11",
         level: 1,
         tense: "past",
-        title: "A Trip to the Beach",
-        content: "Last month, my <abbr title='Keluarga'>family</abbr> and I traveled to a beautiful <abbr title='Pantai'>beach</abbr>. The weather was very <abbr title='Panas'>hot</abbr> and the <abbr title='Langit'>sky</abbr> was <abbr title='Cerah'>bright</abbr> blue. My <abbr title='Ayah'>father</abbr> drove the <abbr title='Mobil'>car</abbr> for three hours from the <abbr title='Kota'>city</abbr>. When we arrived, my <abbr title='Saudara laki-laki'>brother</abbr> and I ran to the <abbr title='Air'>water</abbr> and swam for a long time. My <abbr title='Ibu'>mother</abbr> sat under a big <abbr title='Pohon'>tree</abbr> and read a <abbr title='Buku'>book</abbr>. We felt very <abbr title='Senang'>happy</abbr> because the place was <abbr title='Tenang'>quiet</abbr> and <abbr title='Bersih'>clean</abbr>. In the evening, we bought some fresh <abbr title='Ikan'>fish</abbr> and cooked it for <abbr title='Makan malam'>dinner</abbr>.",
+        title: "A Fun Saturday",
+        content: "Last Saturday, I stayed at home with my brother. In the morning, we cleaned our bedroom and washed our shoes. In the afternoon, we played football in the garden. My father bought a big pizza for our lunch. We also watched a funny movie on the computer. We laughed a lot because the movie was very good. We felt tired at night, so we slept early.",
         questions: [
-            {
-                q: "When did the family go to the beach?",
-                opt: ["Yesterday", "Last week", "Last month", "Last year"],
-                ans: 2,
-                hint: "Check the very first sentence."
-            },
-            {
-                q: "Who drove the car to the beach?",
-                opt: ["The writer", "The father", "The mother", "The brother"],
-                ans: 1,
-                hint: "Look for the person driving."
-            },
-            {
-                q: "What did the mother do at the beach?",
-                opt: ["Swam", "Cooked fish", "Read a book", "Drove a car"],
-                ans: 2,
-                hint: "Find the activity under the tree."
-            },
-            {
-                q: "Why did they feel happy?",
-                opt: ["Place was noisy", "Place was dirty", "Place was quiet and clean", "They were tired"],
-                ans: 2,
-                hint: "Look for the adjectives 'quiet' and 'clean'."
-            },
-            {
-                q: "What did they eat for dinner?",
-                opt: ["Rice", "Egg", "Fish", "Bread"],
-                ans: 2,
-                hint: "They bought this from the market."
-            }
+            { q: "When did the story happen?", opt: ["Last Friday", "Last Saturday", "Last Sunday", "Yesterday"], ans: 1, hint: "Check the first sentence." },
+            { q: "What did they wash in the morning?", opt: ["The car", "The clothes", "Their shoes", "The floor"], ans: 2, hint: "Look for what they did after cleaning the room." },
+            { q: "Where did they play football?", opt: ["In the park", "At school", "In the garden", "On the road"], ans: 2, hint: "Find the place for playing." },
+            { q: "What did the father buy for lunch?", opt: ["Bread", "Pizza", "Rice", "Fish"], ans: 1, hint: "Look for a food name." },
+            { q: "Why did they laugh?", opt: ["Because they were hungry", "Because the movie was funny", "Because they won a game", "Because it was raining"], ans: 1, hint: "Check the description of the movie." }
         ]
     },
 
-    // ==========================================
-    // 3. SIMPLE FUTURE (TEKS 3 - FUTURE GOALS)
-    // ==========================================
+    // 12. FUTURE CAREER (Future Tense)
     {
-        id: "st_fu_01",
+        id: "st_fu_12",
         level: 1,
         tense: "future",
-        title: "Sarah's Dream",
-        content: "Next year, Sarah will finish her <abbr title='Belajar'>study</abbr> at the university. She wants to be a professional <abbr title='Dokter'>doctor</abbr> in a big <abbr title='Rumah sakit'>hospital</abbr>. She will work <abbr title='Keras'>hard</abbr> to help <abbr title='Sakit'>sick</abbr> people and <abbr title='Menyelamatkan'>save</abbr> lives. Sarah also plans to <abbr title='Bepergian'>travel</abbr> to many countries to <abbr title='Belajar'>learn</abbr> new things. She will buy a <abbr title='Kecil'>small</abbr> <abbr title='Rumah'>house</abbr> for her <abbr title='Orang tua'>parents</abbr> in a peaceful <abbr title='Kota kecil'>town</abbr>. She hopes her <abbr title='Keluarga'>family</abbr> will always be <abbr title='Sehat'>healthy</abbr> and proud of her. It will be a <abbr title='Sibuk'>busy</abbr> but <abbr title='Menyenangkan'>exciting</abbr> year for her.",
+        title: "When I Grow Up",
+        content: "I want to be a great singer in the future. I will learn how to sing beautiful songs every day. My mother will buy a new microphone for me next month. I will also learn to play the guitar with my friend. I will travel to many cities and show my music to everyone. I hope people will like my voice. It will be a very exciting job for me.",
         questions: [
-            {
-                q: "What does Sarah want to be in the future?",
-                opt: ["A teacher", "A nurse", "A doctor", "A pilot"],
-                ans: 2,
-                hint: "Look for her profession."
-            },
-            {
-                q: "Where will she work?",
-                opt: ["In an office", "In a school", "In a hospital", "In a bank"],
-                ans: 2,
-                hint: "Doctors work in this place."
-            },
-            {
-                q: "What will she buy for her parents?",
-                opt: ["A car", "A house", "A computer", "A phone"],
-                ans: 1,
-                hint: "Check the sentence about her parents."
-            },
-            {
-                q: "Where will the house be located?",
-                opt: ["In a big city", "In a busy market", "In a peaceful town", "Near the beach"],
-                ans: 2,
-                hint: "Look for the word 'town'."
-            },
-            {
-                q: "How does she describe her next year?",
-                opt: ["Boring", "Sad", "Busy and exciting", "Easy and slow"],
-                ans: 2,
-                hint: "Look at the very last sentence."
-            }
+            { q: "What does the writer want to be?", opt: ["A doctor", "A singer", "A teacher", "A chef"], ans: 1, hint: "Look for the profession." },
+            { q: "What will the mother buy next month?", opt: ["A guitar", "A computer", "A microphone", "A dress"], ans: 2, hint: "A tool for a singer." },
+            { q: "Who will the writer learn guitar with?", opt: ["Father", "Teacher", "Brother", "Friend"], ans: 3, hint: "Find the person mentioned." },
+            { q: "Where will the writer travel?", opt: ["To the beach", "To many cities", "To the school", "To the market"], ans: 1, hint: "Look for the destination." },
+            { q: "How is the writer's feeling about the job?", opt: ["Bored", "Scared", "Excited", "Sad"], ans: 2, hint: "Check the last sentence." }
         ]
     },
 
-// --- TEKS 04: THE BUSY MARKET ---
+    // 13. COOKING WITH FATHER (Past Tense)
     {
-        id: "st_pr_04",
+        id: "st_pa_13",
         level: 1,
-        tense: "present",
-        title: "The Busy Market",
-        content: "Every <abbr title='Pagi'>morning</abbr>, Mr. Anton goes to the <abbr title='Pasar'>market</abbr> near his <abbr title='Rumah'>home</abbr>. He is a <abbr title='Koki'>chef</abbr> in a big <abbr title='Kantor'>office</abbr>. In the market, he sees many people. Some <abbr title='Perempuan'>women</abbr> buy <abbr title='Buah'>fruit</abbr>, <abbr title='Daging'>meat</abbr>, and <abbr title='Ikan'>fish</abbr>. Mr. Anton looks for fresh <abbr title='Sayuran'>vegetables</abbr>, <abbr title='Garam'>salt</abbr>, and <abbr title='Gula'>sugar</abbr>. He <abbr title='Membawa'>carries</abbr> a big <abbr title='Tas'>bag</abbr> to put all the things. He likes this market because the food is <abbr title='Murah'>cheap</abbr> and the people are <abbr title='Ramah'>friendly</abbr>. He always <abbr title='Tersenyum'>smiles</abbr> when he talks to the <abbr title='Penjual'>sellers</abbr>.",
+        tense: "past",
+        title: "Cooking Dinner",
+        content: "Last night, I helped my father in the kitchen. We cooked a special dinner for my mother's birthday. My father cut the meat and I washed the vegetables. We used salt and sugar to make the food delicious. After one hour, the food was ready. My mother was very surprised and happy. We ate the dinner together and the taste was perfect.",
         questions: [
-            { q: "Where does Mr. Anton go every morning?", opt: ["To the school", "To the market", "To the hospital", "To the bank"], ans: 1 },
-            { q: "What is Mr. Anton's job?", opt: ["A teacher", "A doctor", "A chef", "A driver"], ans: 2 },
-            { q: "What does he look for in the market?", opt: ["Pen and paper", "Clothes and shoes", "Vegetables and salt", "Books and chairs"], ans: 2 },
-            { q: "Why does he like the market?", opt: ["Because it is far", "Because it is expensive", "Because food is cheap", "Because it is noisy"], ans: 2 },
-            { q: "What does he do when he talks to sellers?", opt: ["He cries", "He sleeps", "He smiles", "He runs"], ans: 2 }
+            { q: "Why did they cook a special dinner?", opt: ["For Christmas", "For mother's birthday", "For a New Year", "For lunch"], ans: 1, hint: "Check the reason for cooking." },
+            { q: "What did the writer do in the kitchen?", opt: ["Cut the meat", "Washed the vegetables", "Bought the food", "Cleaned the floor"], ans: 1, hint: "Check the writer's specific action." },
+            { q: "What did they use to make the food delicious?", opt: ["Milk and water", "Salt and sugar", "Fruit and bread", "Tea and coffee"], ans: 1, hint: "Look for the ingredients." },
+            { q: "How long did they cook?", opt: ["Thirty minutes", "One hour", "Two hours", "All day"], ans: 1, hint: "Look for the time mentioned." },
+            { q: "How was the taste of the food?", opt: ["Bitter", "Sour", "Perfect", "Bad"], ans: 2, hint: "Check the last sentence." }
         ]
     },
 
-    // --- TEKS 05: AT THE ANIMAL PARK ---
+    // 14. THE NEW BIKE (Present Tense)
     {
-        id: "st_pr_05",
+        id: "st_pr_14",
         level: 1,
         tense: "present",
-        title: "At the Animal Park",
-        content: "My <abbr title='Saudara perempuan'>sister</abbr> works at the <abbr title='Taman'>park</abbr>. She is a <abbr title='Penjaga hewan'>zoo keeper</abbr>. Every day, she <abbr title='Membantu'>helps</abbr> many <abbr title='Hewan'>animals</abbr>. She gives <abbr title='Susu'>milk</abbr> to the <abbr title='Kucing'>cats</abbr> and <abbr title='Air'>water</abbr> to the <abbr title='Burung'>birds</abbr>. The park is very <abbr title='Besar'>big</abbr> and <abbr title='Hijau'>green</abbr>. Many <abbr title='Keluarga'>families</abbr> visit the park on the weekend. The <abbr title='Anak laki-laki'>boys</abbr> and <abbr title='Anak perempuan'>girls</abbr> are <abbr title='Senang'>happy</abbr> when they see the tall <abbr title='Pohon'>trees</abbr> and beautiful <abbr title='Bunga'>flowers</abbr>. My sister <abbr title='Mencintai'>loves</abbr> her job because she <abbr title='Merasa'>feels</abbr> <abbr title='Tenang'>calm</abbr> there.",
+        title: "My Blue Bike",
+        content: "I have a new bike. The color is bright blue. Every afternoon, I ride my bike to the park near my house. The bike is very fast and easy to use. I always wear my hat and shoes when I ride it. Sometimes, I meet my friends and we race together. I keep my bike clean and put it in the garage at night. I love my bike very much.",
         questions: [
-            { q: "Where does the sister work?", opt: ["In a shop", "In a park", "In a kitchen", "In a room"], ans: 1 },
-            { q: "What does she give to the birds?", opt: ["Bread", "Milk", "Water", "Fish"], ans: 2 },
-            { q: "How is the park described?", opt: ["Small and dirty", "Big and green", "Old and dark", "Empty and quiet"], ans: 1 },
-            { q: "When do families visit the park?", opt: ["Every night", "Every Monday", "On the weekend", "Every evening"], ans: 2 },
-            { q: "Why does the sister love her job?", opt: ["She feels angry", "She feels bored", "She feels calm", "She feels scared"], ans: 2 }
+            { q: "What color is the bike?", opt: ["Red", "Blue", "Green", "Yellow"], ans: 1, hint: "Look for the color." },
+            { q: "Where does the writer go with the bike?", opt: ["To the market", "To the park", "To the school", "To the hospital"], ans: 1, hint: "Check the destination." },
+            { q: "What does the writer wear for safety?", opt: ["Uniform", "Coat", "Hat and shoes", "Watch"], ans: 2, hint: "Look for clothes mentioned." },
+            { q: "Where does the writer put the bike at night?", opt: ["In the kitchen", "In the garden", "In the garage", "On the road"], ans: 2, hint: "Check the storage place." },
+            { q: "How is the bike described?", opt: ["Slow and old", "Big and heavy", "Fast and easy to use", "Dirty and small"], ans: 2, hint: "Check the adjectives." }
         ]
     },
 
-    // --- TEKS 06: THE SMART DOCTOR ---
+    // 15. VISITING GRANDPARENTS (Future Tense)
     {
-        id: "st_pr_06",
+        id: "st_fu_15",
         level: 1,
-        tense: "present",
-        title: "The Smart Doctor",
-        content: "Mr. Hasan is a <abbr title='Dokter'>doctor</abbr> in a small <abbr title='Kota'>town</abbr>. He is very <abbr title='Pintar'>smart</abbr> and <abbr title='Baik hati'>kind</abbr>. He <abbr title='Bangun'>wakes up</abbr> at 6 AM and <abbr title='Minum'>drinks</abbr> <abbr title='Kopi'>coffee</abbr>. Then, he <abbr title='Menyetir'>drives</abbr> his <abbr title='Mobil'>car</abbr> to the <abbr title='Rumah sakit'>hospital</abbr>. He <abbr title='Melihat/memeriksa'>sees</abbr> many <abbr title='Sakit'>sick</abbr> people every day. He <abbr title='Mendengarkan'>listens</abbr> to their problems and <abbr title='Memberi'>gives</abbr> them <abbr title='Obat'>medicine</abbr>. He tells them to <abbr title='Makan'>eat</abbr> <abbr title='Buah'>fruit</abbr> and <abbr title='Tidur'>sleep</abbr> enough. Mr. Hasan is never <abbr title='Lelah'>tired</abbr> because he <abbr title='Ingin'>wants</abbr> to help everyone.",
+        tense: "future",
+        title: "A Trip to the Village",
+        content: "Next month, my family will visit my grandparents in a small village. We will stay there for three days. My grandfather will show me his farm. We will see many animals like cows, ducks, and chickens. My grandmother will cook traditional food for us. I will also swim in the river with my cousins. I think it will be a very peaceful holiday.",
         questions: [
-            { q: "What time does Mr. Hasan wake up?", opt: ["5 AM", "6 AM", "7 AM", "8 AM"], ans: 1 },
-            { q: "What does he drink in the morning?", opt: ["Milk", "Tea", "Coffee", "Water"], ans: 2 },
-            { q: "How does he go to the hospital?", opt: ["By bike", "By bus", "By car", "By walking"], ans: 2 },
-            { q: "What does he give to sick people?", opt: ["Money", "Food", "Medicine", "Clothes"], ans: 2 },
-            { q: "Why is he never tired?", opt: ["He wants to sleep", "He wants to help everyone", "He wants to go home", "He wants to eat"], ans: 1 }
-        ]
-    },
-
-    // --- TEKS 07: LIFE IN THE GARDEN ---
-    {
-        id: "st_pr_07",
-        level: 1,
-        tense: "present",
-        title: "Life in the Garden",
-        content: "My <abbr title='Kakek'>grandfather</abbr> is a <abbr title='Petani'>farmer</abbr>. He has a beautiful <abbr title='Kebun'>garden</abbr> behind his <abbr title='Rumah'>house</abbr>. He <abbr title='Menanam'>plants</abbr> many things like <abbr title='Apel'>apples</abbr>, <abbr title='Bunga'>flowers</abbr>, and <abbr title='Rumput'>grass</abbr>. Every afternoon, he <abbr title='Menyiram'>washes</abbr> the plants with <abbr title='Air'>water</abbr>. I often <abbr title='Datang'>come</abbr> to his house to <abbr title='Membantu'>help</abbr> him. We <abbr title='Duduk'>sit</abbr> on a <abbr title='Kursi'>chair</abbr> and <abbr title='Mengobrol'>talk</abbr> about many things. The <abbr title='Matahari'>sun</abbr> is <abbr title='Terang'>bright</abbr> and the <abbr title='Udara'>air</abbr> is <abbr title='Bersih'>clean</abbr>. I <abbr title='Berharap'>hope</abbr> the plants grow <abbr title='Cepat'>fast</abbr>.",
-        questions: [
-            { q: "What is the grandfather's job?", opt: ["A doctor", "A farmer", "A teacher", "A chef"], ans: 1 },
-            { q: "Where is the garden located?", opt: ["In front of the house", "Near the market", "Behind the house", "In the city"], ans: 2 },
-            { q: "What does the grandfather do every afternoon?", opt: ["He sleeps", "He washes the plants", "He buys fruit", "He goes to the bank"], ans: 1 },
-            { q: "Where do they sit?", opt: ["On the floor", "On the grass", "On a chair", "On a table"], ans: 2 },
-            { q: "How is the air in the garden?", opt: ["Dirty", "Hot", "Clean", "Cold"], ans: 2 }
-        ]
-    },
-
-    // --- TEKS 08: THE NEW CLASSROOM ---
-    {
-        id: "st_pr_08",
-        level: 1,
-        tense: "present",
-        title: "The New Classroom",
-        content: "Today is my first <abbr title='Hari'>day</abbr> in the new <abbr title='Kelas'>class</abbr>. The <abbr title='Ruangan'>room</abbr> is <abbr title='Besar'>big</abbr> and <abbr title='Bersih'>clean</abbr>. There is a <abbr title='Meja tulis'>desk</abbr> and a <abbr title='Kursi'>chair</abbr> for every <abbr title='Murid'>student</abbr>. I see a <abbr title='Jam dinding'>clock</abbr> and a <abbr title='Gambar'>picture</abbr> on the <abbr title='Dinding'>wall</abbr>. My <abbr title='Guru'>teacher</abbr> is Mrs. Susi. She <abbr title='Berbicara'>speaks</abbr> <abbr title='Pelan'>slowly</abbr> so we can <abbr title='Mengerti'>understand</abbr>. We <abbr title='Menggunakan'>use</abbr> <abbr title='Pena'>pens</abbr> and <abbr title='Buku'>books</abbr> to <abbr title='Menulis'>write</abbr> the lesson. I <abbr title='Merasa'>feel</abbr> <abbr title='Senang'>happy</abbr> because I have many <abbr title='Teman'>friends</abbr> here.",
-        questions: [
-            { q: "How is the new classroom?", opt: ["Small and dirty", "Big and clean", "Dark and old", "Quiet and empty"], ans: 1 },
-            { q: "What is on the wall?", opt: ["A door", "A window", "A clock and a picture", "A bag"], ans: 2 },
-            { q: "Who is the teacher?", opt: ["Mr. Anton", "Mrs. Susi", "Mr. Hasan", "Sarah"], ans: 1 },
-            { q: "What do students use to write?", opt: ["Pencils and paper", "Pens and books", "Computers", "Phones"], ans: 1 },
-            { q: "Why does the writer feel happy?", opt: ["Because he is tired", "Because he has many friends", "Because the class is difficult", "Because it is night"], ans: 1 }
-        ]
-    },
-
-    // --- TEKS 09: THE MORNING BREAKFAST ---
-    {
-        id: "st_pr_09",
-        level: 1,
-        tense: "present",
-        title: "The Morning Breakfast",
-        content: "My <abbr title='Keluarga'>family</abbr> always has <abbr title='Sarapan'>breakfast</abbr> together at 7 AM. We <abbr title='Duduk'>sit</abbr> at the big <abbr title='Meja'>table</abbr> in the <abbr title='Dapur'>kitchen</abbr>. My <abbr title='Ayah'>father</abbr> drinks <abbr title='Teh'>tea</abbr> and my <abbr title='Ibu'>mother</abbr> drinks <abbr title='Susu'>milk</abbr>. I <abbr title='Makan'>eat</abbr> <abbr title='Roti'>bread</abbr> with <abbr title='Gula'>sugar</abbr>. My <abbr title='Saudara laki-laki'>brother</abbr> likes <abbr title='Nasi'>rice</abbr> and <abbr title='Telur'>eggs</abbr>. We <abbr title='Mengobrol'>talk</abbr> about our <abbr title='Pekerjaan'>job</abbr> and <abbr title='Sekolah'>school</abbr>. Before we <abbr title='Pergi'>go</abbr>, my mother <abbr title='Menutup'>closes</abbr> the <abbr title='Jendela'>windows</abbr> and <abbr title='Mengunci'>locks</abbr> the <abbr title='Pintu'>door</abbr>. It is a <abbr title='Bagus'>good</abbr> start for the day.",
-        questions: [
-            { q: "What time does the family have breakfast?", opt: ["6 AM", "7 AM", "8 AM", "9 AM"], ans: 1 },
-            { q: "What does the father drink?", opt: ["Milk", "Coffee", "Tea", "Water"], ans: 2 },
-            { q: "What does the writer eat?", opt: ["Rice and eggs", "Fish and meat", "Bread with sugar", "Fruit"], ans: 2 },
-            { q: "Where do they sit?", opt: ["In the bedroom", "In the garden", "At the big table", "On the floor"], ans: 2 },
-            { q: "What does the mother do before they go?", opt: ["She opens the door", "She closes the windows", "She cooks dinner", "She watches a movie"], ans: 1 }
-        ]
-    },
-
-    // --- TEKS 10: THE CLEAN HOUSE ---
-    {
-        id: "st_pr_10",
-        level: 1,
-        tense: "present",
-        title: "The Clean House",
-        content: "Every Saturday, we <abbr title='Membersihkan'>clean</abbr> our <abbr title='Rumah'>house</abbr> together. My <abbr title='Ayah'>father</abbr> <abbr title='Mencuci'>washes</abbr> the <abbr title='Mobil'>car</abbr> and the <abbr title='Sepeda'>bike</abbr> in the <abbr title='Jalan'>road</abbr>. My <abbr title='Ibu'>mother</abbr> <abbr title='Membersihkan'>cleans</abbr> the <abbr title='Lantai'>floor</abbr> and the <abbr title='Dinding'>walls</abbr>. I <abbr title='Membantu'>help</abbr> my <abbr title='Saudara perempuan'>sister</abbr> to <abbr title='Menyikat'>brush</abbr> the <abbr title='Kamar mandi'>bathroom</abbr>. We <abbr title='Membuang'>throw</abbr> the <abbr title='Sampah'>trash</abbr> into the <abbr title='Kotak'>box</abbr>. After we <abbr title='Selesai'>finish</abbr>, the house <abbr title='Terlihat'>looks</abbr> <abbr title='Baru'>new</abbr> and <abbr title='Bersih'>clean</abbr>. We <abbr title='Merasa'>feel</abbr> <abbr title='Lelah'>tired</abbr> but <abbr title='Senang'>happy</abbr>.",
-        questions: [
-            { q: "When do they clean the house?", opt: ["Every Monday", "Every Friday", "Every Saturday", "Every Sunday"], ans: 2 },
-            { q: "What does the father wash?", opt: ["The floor", "The car and the bike", "The windows", "The dishes"], ans: 1 },
-            { q: "Who cleans the floor?", opt: ["The writer", "The father", "The mother", "The sister"], ans: 2 },
-            { q: "What does the writer do?", opt: ["Washes the car", "Cleans the walls", "Helps the sister brush the bathroom", "Cooks lunch"], ans: 2 },
-            { q: "How do they feel after finishing?", opt: ["Sad and hungry", "Tired but happy", "Angry and cold", "Sleepy and bored"], ans: 1 }
+            { q: "How long will they stay in the village?", opt: ["One day", "Two days", "Three days", "One week"], ans: 2, hint: "Look for the duration." },
+            { q: "What will the grandfather show?", opt: ["His car", "His farm", "His new house", "His money"], ans: 1, hint: "Find the grandfather's property." },
+            { q: "What animals will they see?", opt: ["Lions and tigers", "Cats and dogs", "Cows, ducks, and chickens", "Birds and fish"], ans: 2, hint: "Look for farm animals." },
+            { q: "What will the writer do in the river?", opt: ["Wash clothes", "Swim", "Catch fish", "Drink water"], ans: 1, hint: "Check the river activity." },
+            { q: "How does the writer describe the holiday?", opt: ["Noisy", "Boring", "Peaceful", "Expensive"], ans: 2, hint: "Check the last sentence." }
         ]
     }
-]
+    // Tambahkan sampai no 20 jika diperlukan...
+];
+
+window.STORY_BANK.push(...lv1Stories);

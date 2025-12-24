@@ -819,38 +819,55 @@ function updateProfileUI() {
     }
 }
 
+/**
+ * Menampilkan Modal Premium/Limit Nyawa
+ * @param {string} reason - Pesan yang akan ditampilkan di modal
+ */
 function showPremiumWall(reason) {
     const modal = document.getElementById('premium-modal');
     const reasonText = document.getElementById('premium-reason');
     
-    if (!modal) return console.error("Elemen 'premium-modal' tidak ditemukan di HTML!");
+    if (!modal) {
+        return console.error("Elemen 'premium-modal' tidak ditemukan di HTML!");
+    }
 
-    if (reasonText) reasonText.innerText = reason;
+    // Set pesan alasan (misal: "Limit membaca cerita harian tercapai")
+    if (reasonText) {
+        reasonText.innerText = reason;
+    }
 
-    // PENTING: Cari area konten di dalam modal untuk menaruh tombol
-    // Pastikan di index.html ada elemen dengan class 'premium-popup' atau 'theory-card'
+    // Mencari area konten utama di dalam modal
     const contentArea = modal.querySelector('.premium-popup') || modal.querySelector('.theory-card');
     
     if (contentArea) {
-        // 1. Bersihkan tombol lama agar tidak DOUBLE (Screenshot 144)
-        let oldActions = contentArea.querySelector('.premium-actions');
-        if (oldActions) oldActions.remove();
+        /**
+         * LOGIKA ANTI-DOUBLE:
+         * Menghapus semua elemen aksi yang mungkin sudah ada sebelumnya 
+         * baik dari HTML statis maupun injeksi JS sebelumnya.
+         */
+        const existingActions = contentArea.querySelectorAll('.premium-actions');
+        existingActions.forEach(el => el.remove());
 
-        // 2. Buat kontainer baru
+        // Membuat kontainer tombol aksi yang baru
         const actionButtons = document.createElement('div');
         actionButtons.className = 'premium-actions';
         actionButtons.style.width = "100%";
         actionButtons.style.marginTop = "20px";
 
-        // 3. Isi dengan tombol yang benar (Integrasi Iklan & Premium)
+        // Mengisi tombol: Tonton Iklan, Aktifkan Premium, dan Nanti Saja
         actionButtons.innerHTML = `
-            <button class="btn-upgrade btn-ad" onclick="watchAdForLife()" style="width:100%; margin-bottom:10px; background:#4CAF50; color:white; border:none; padding:12px; border-radius:10px; cursor:pointer;">
+            <button class="btn-upgrade btn-ad" onclick="watchAdForLife()" 
+                style="width:100%; margin-bottom:10px; background:#4CAF50; color:white; border:none; padding:12px; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px;">
                 <i class="fas fa-play-circle"></i> TONTON IKLAN (+1 ❤️)
             </button>
-            <button class="btn-upgrade btn-premium" onclick="alert('Fitur Premium segera hadir!')" style="width:100%; background: #FFD700; color: #333; font-weight:bold; border:none; padding:12px; border-radius:10px; cursor:pointer;">
+            
+            <button class="btn-upgrade btn-premium" onclick="alert('Fitur Premium segera hadir!')" 
+                style="width:100%; background: #FFD700; color: #333; font-weight:bold; border:none; padding:12px; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px;">
                 <i class="fas fa-crown"></i> AKTIFKAN PREMIUM
             </button>
-            <button onclick="closePremiumWall()" style="width:100%; margin-top:10px; background:none; border:none; color:#666; cursor:pointer;">
+            
+            <button onclick="closePremiumWall()" 
+                style="width:100%; margin-top:10px; background:none; border:none; color:#666; cursor:pointer; font-size: 0.9rem;">
                 NANTI SAJA
             </button>
         `;
@@ -858,12 +875,18 @@ function showPremiumWall(reason) {
         contentArea.appendChild(actionButtons);
     }
 
+    // Tampilkan modal dengan CSS Flex agar posisi di tengah
     modal.style.display = 'flex';
 }
 
+/**
+ * Menutup Modal Premium
+ */
 function closePremiumWall() {
     const modal = document.getElementById('premium-modal');
-    if (modal) modal.style.display = 'none';
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
 
 function playSuccessSound() {
@@ -1455,26 +1478,105 @@ async function startStory() {
  * Jembatan Reward: Menghubungkan story_logic.js ke sistem poin pusat
  */
 function processStoryReward(correctCount, totalQuestions) {
-    const xpGained = correctCount * 20; 
+    // 1. Hitung XP Baru (5 XP per soal benar)
+    const xpGained = correctCount * 5; 
     
-    // Tambahkan XP ke total profil & statistik mingguan
+    // 2. Tambahkan XP ke profil & statistik
     if (xpGained > 0) {
-        addXP(xpGained);
+        addXP(xpGained); // Fungsi addXP biasanya juga mengupdate userState.xp
     }
 
-    // Update status harian agar limit bekerja
-    userState.storyDoneToday = (userState.storyDoneToday || 0) + 1;
-    userState.lastActiveDate = new Date().toDateString();
+    // 3. Logika Perolehan Gems (Hadiah Mata Uang)
+    let gemsGained = 0;
+    if (correctCount === totalQuestions) {
+        gemsGained = 3; // Bonus Perfect Score
+    } else if (correctCount >= 3) {
+        gemsGained = 1; // Bonus Lulus (Minimal 3 benar)
+    }
 
-    // Konsekuensi: Jika jawaban benar di bawah 60% (3 soal), nyawa berkurang
+    if (gemsGained > 0) {
+        userState.gems = (userState.gems || 0) + gemsGained;
+    }
+
+    // 4. Update Limit Harian & Tanggal Aktif
+    // Menggunakan lastStoryDate untuk memastikan limit 1 hari = 1 cerita
+    const today = new Date().toDateString();
+    userState.lastStoryDate = today; 
+    userState.storyDoneToday = (userState.storyDoneToday || 0) + 1;
+    userState.lastActiveDate = today;
+
+    // 5. Konsekuensi Nyawa (Khusus Free User)
+    // Jika benar < 3 (di bawah 60%), nyawa berkurang 1
     if (correctCount < 3 && !userState.isPremium && !window.isAdminMode) {
         if (userState.lives > 0) {
             userState.lives--;
-            updateUI(); // Refresh tampilan hati
         }
     }
 
+    // 6. Cek Syarat Final Exam (1000 XP)
+    // Memanggil fungsi untuk memunculkan tombol Final Exam jika syarat terpenuhi
+    if (typeof checkXPForExam === 'function') {
+        checkXPForExam();
+    }
+
+    // 7. Simpan Data & Refresh Tampilan Navbar
     saveUserData();
+    if (typeof updateUI === 'function') {
+        updateUI(); // Memastikan jumlah Gems, XP, dan Nyawa terbaru muncul di layar
+    }
+}
+
+/**
+ * Fungsi Tambahan untuk memeriksa ambang batas 1000 XP
+ */
+function checkXPForExam() {
+    if (userState.xp >= 1000) {
+        // Cari container tombol final exam di dashboard dan munculkan
+        const examBtn = document.getElementById("final-exam-container");
+        if (examBtn) {
+            examBtn.classList.remove("hidden");
+            // Bisa tambahkan efek animasi atau toast
+            console.log("Final Exam Unlocked!");
+        }
+    }
+}
+
+function getDailyStory(level) {
+    // 1. Filter cerita berdasarkan level
+    const availableStories = window.STORY_BANK.filter(s => s.level === level);
+    
+    // 2. Gunakan tanggal hari ini sebagai penentu (Seed)
+    // Contoh: "2025-12-25"
+    const today = new Date().toISOString().slice(0, 10);
+    
+    // 3. Buat angka unik berdasarkan tanggal tersebut
+    let seed = 0;
+    for (let i = 0; i < today.length; i++) {
+        seed += today.charCodeAt(i);
+    }
+
+    // 4. Pilih cerita secara acak tapi konsisten di hari yang sama
+    const index = seed % availableStories.length;
+    return availableStories[index];
+}
+
+function getRandomStory(level) {
+    const availableStories = window.STORY_BANK.filter(s => s.level === level);
+    
+    // Ambil daftar ID yang sudah dibaca dari localStorage agar tidak duplikat
+    let readStories = JSON.parse(localStorage.getItem('read_stories') || "[]");
+    
+    // Cari cerita yang belum dibaca
+    let unread = availableStories.filter(s => !readStories.includes(s.id));
+    
+    // Jika semua sudah dibaca, reset listnya
+    if (unread.length === 0) {
+        readStories = [];
+        unread = availableStories;
+    }
+
+    const randomStory = unread[Math.floor(Math.random() * unread.length)];
+    return randomStory;
 }
 
 // ==========================================
