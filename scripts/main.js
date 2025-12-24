@@ -4,7 +4,13 @@
 window.switchTab = switchTab;
 window.startDictation = startDictation;
 window.startSentenceBuilder = startSentenceBuilder;
-window.startSpeaking = (typeof startSpeakingModule !== 'undefined') ? startSpeakingModule : () => {};
+window.startSpeaking = () => { 
+    if (typeof startSpeakingModule === 'function') {
+        startSpeakingModule();
+    } else {
+        console.error("Modul Speaking belum dimuat.");
+    }
+};
 window.openIdiomPage = openIdiomPage;
 window.watchAdForLife = watchAdForLife;
 window.closeGame = closeGame;
@@ -20,68 +26,59 @@ window.startTenses = function() {
     } else {
         console.error("Fungsi startTensesModule tidak ditemukan. Pastikan tenses_logic.js sudah dimuat.");
     }
+};
+
 // Variabel status admin global
 window.isAdminMode = false;
-};
 
 // ==========================================
 // 2. STATE MANAGEMENT & CONFIG
 // ==========================================
-let userState = window.userState || {
+window.userState = window.userState || {
     currentLevel: 1,
     points: 0,
     lives: 5,
     gems: 20,
     streakCount: 0,
+    isPremium: false,
     stats: {
         sentenceBuilder: { doneToday: 0, dailyLimit: 5 },
         dictation: { doneToday: 0, dailyLimit: 5 },
         tenses: { doneToday: 0, dailyLimit: 5 },
-        speaking: { doneToday: 0, dailyLimit: 5 }
+        speaking: { doneToday: 0, dailyLimit: 5 },
+        indoglish: { doneToday: 0, dailyLimit: 5 }
     },
     collectedIdioms: [],
     idiomsOpenedToday: 0,
     lastActiveDate: ""
 };
 
-const READING_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQMm5ZPDIt2jlcIwKSL7yUDqUJ27U1KvDpi1uXeydUws3YogJcNNkBSMDE74gXE9n_JofDbNTHoVoYa/pub?output=csv";
+// Gunakan var untuk alias agar bisa ditimpa/diakses antar file tanpa error
+var userState = window.userState;
 window.dictationBank = [];
+
+// Fungsi Helper XP agar sinkron dengan semua modul
+window.addXP = function(amount) {
+    userState.points += amount;
+    console.log(`XP Bertambah: +${amount}. Total XP: ${userState.points}`);
+    if (typeof updateUI === 'function') updateUI();
+    if (typeof saveUserData === 'function') saveUserData();
+};
 
 // ==========================================
 // 3. INITIALIZATION & SYNC
 // ==========================================
 window.onload = async () => {
     console.log("Memulai Sinkronisasi LinguaQuest...");
-
-    // 1. DATA CORE: Load data user agar variabel window.userState tersedia
-    loadUserData(); 
     
-    // 2. DAILY LOGIC: Cek reset harian dan perbarui Streak
-    checkDailyReset();
-    if (typeof updateStreak === 'function') {
-        updateStreak(); 
-    }
-
-    // 3. SB DATA SYNC: Proses data Sentence Builder lokal
-    if (typeof syncSentenceBuilderData === 'function') {
-        syncSentenceBuilderData();
-    }
-
-    // 4. DICTATION SYNC (LOCAL): Proses data Dikte dari file lokal (Blok 7)
-    // Kita panggil fungsi lokal yang baru saja kita simpan di Blok 7
-    if (typeof syncDictationLocalData === 'function') {
-        syncDictationLocalData();
-    }
-
-    // 5. ARENA ENGINE: Menggambar peta & gembok level
-    if (typeof initArenaLogic === 'function') {
-        initArenaLogic();
-    }
-
-    // 6. UI UPDATE: Memperbarui tampilan skor, nyawa, dan progress bar
-    if (typeof updateUI === 'function') {
-        updateUI();
-    }
+    if (typeof loadUserData === 'function') loadUserData(); 
+    if (typeof checkDailyReset === 'function') checkDailyReset();
+    
+    if (typeof updateStreak === 'function') updateStreak(); 
+    if (typeof syncSentenceBuilderData === 'function') syncSentenceBuilderData();
+    if (typeof syncDictationLocalData === 'function') syncDictationLocalData();
+    if (typeof initArenaLogic === 'function') initArenaLogic();
+    if (typeof updateUI === 'function') updateUI();
     
     console.log("✅ LinguaQuest Ready: User Level " + (userState.currentLevel || 1));
 };
@@ -243,6 +240,9 @@ function claimChallengeXP() {
  * Menampilkan koleksi idiom di grid profil
  */
 function renderIdiomCollection() {
+    const sourceData = window.dictionaryData || []; // Pastikan ada fallback array kosong
+    const item = sourceData.find(d => d.id === id);
+
     const listArea = document.getElementById('idiom-collection-list');
     if (!listArea) return;
 
@@ -1080,27 +1080,45 @@ function isValidEnglishWord(word) {
 /**
  * REVISI: Logika Ujian Global
  */
-function startGlobalLevelExam() {
-    const currentLv = userState.currentLevel;
-    
-    // Ambil soal SB & Dictation yang sesuai level user sekarang
-    const sbSoal = window.SENTENCE_BUILDER_EXERCISES.filter(s => s.level === currentLv);
-    const dictSoal = window.dictationBank.filter(s => s.level === currentLv);
+window.startGlobalLevelExam = function() {
+    const user = window.userState;
+    const neededXP = 1000;
 
-    // Minimal 10 soal untuk ujian
-    const examPool = [
-        ...sbSoal.sort(() => 0.5 - Math.random()).slice(0, 5),
-        ...dictSoal.sort(() => 0.5 - Math.random()).slice(0, 5)
-    ];
+    // JIKA XP BELUM CUKUP
+    if (user.points < neededXP) {
+        const progress = (user.points / neededXP) * 100;
+        
+        // Gunakan struktur HTML yang bersih untuk openGameOverlay
+        let html = `
+            <div style="text-align:center; padding: 10px;">
+                <div style="font-size: 3rem; margin-bottom: 15px;">🔒</div>
+                <h2 style="color:#333; margin-bottom:10px;">Gerbang Terkunci</h2>
+                <p style="color:#666;">Kumpulkan XP untuk membuka ujian ini.</p>
+                
+                <div style="background:#eee; height:15px; border-radius:10px; margin:20px 0; overflow:hidden;">
+                    <div style="background:#f1c40f; height:100%; width:${progress}%"></div>
+                </div>
+                
+                <div style="font-weight:bold; color:#f39c12; margin-bottom:20px;">
+                    ${user.points} / ${neededXP} XP
+                </div>
 
-    window.examState = {
-        questions: examPool,
-        currentIndex: 0,
-        score: 0
-    };
+                <button onclick="closeGame()" style="width:100%; padding:15px; background:#3498db; color:white; border:none; border-radius:10px; font-weight:bold;">
+                    LANJUT BELAJAR
+                </button>
+            </div>
+        `;
+        openGameOverlay(html, "UJIAN TERKUNCI");
+        return;
+    }
 
-    renderNextExamQuestion();
-}
+    // JIKA XP CUKUP, MULAI UJIAN
+    if (typeof initGlobalExam === 'function') {
+        initGlobalExam();
+    } else {
+        showToast("Sistem ujian sedang disiapkan!", "info");
+    }
+};
 
 function renderNextExamQuestion() {
     const state = window.examState;
@@ -1397,3 +1415,319 @@ function playErrorSound() {
         audio.play().catch(e => console.warn("Audio play blocked: " + e.message));
     }
 }
+
+// ==========================================
+// 13. STORY MODE INTEGRATION (CORE)
+// ==========================================
+
+/**
+ * Pemicu utama Story Mode dari tombol Menu
+ */
+async function startStory() {
+    console.log("Memulai pemeriksaan akses Story Mode...");
+
+    // 1. Cek Akses (Admin / Premium / Limit Harian)
+    // Otomatis menggunakan aturan di Blok 11
+    if (!checkPremiumAccess('story')) return;
+
+    // 2. Cek Nyawa (User gratis butuh minimal 1 nyawa)
+    if (userState.lives <= 0 && !userState.isPremium && !window.isAdminMode) {
+        showPremiumWall("Nyawa habis! Tonton iklan untuk lanjut membaca.");
+        return;
+    }
+
+    // 3. Pastikan Bank Data Cerita sudah sinkron
+    if (typeof syncStoryData === 'function') {
+        await syncStoryData();
+    }
+
+    // 4. Jalankan Engine Story dari story_logic.js
+    if (typeof startStoryMode === 'function') {
+        startStoryMode();
+        showToast(`Membaca Cerita Level ${userState.currentLevel}`, "success");
+    } else {
+        console.error("File story_logic.js belum termuat sempurna.");
+        alert("Modul Cerita sedang dalam perbaikan.");
+    }
+}
+
+/**
+ * Jembatan Reward: Menghubungkan story_logic.js ke sistem poin pusat
+ */
+function processStoryReward(correctCount, totalQuestions) {
+    const xpGained = correctCount * 20; 
+    
+    // Tambahkan XP ke total profil & statistik mingguan
+    if (xpGained > 0) {
+        addXP(xpGained);
+    }
+
+    // Update status harian agar limit bekerja
+    userState.storyDoneToday = (userState.storyDoneToday || 0) + 1;
+    userState.lastActiveDate = new Date().toDateString();
+
+    // Konsekuensi: Jika jawaban benar di bawah 60% (3 soal), nyawa berkurang
+    if (correctCount < 3 && !userState.isPremium && !window.isAdminMode) {
+        if (userState.lives > 0) {
+            userState.lives--;
+            updateUI(); // Refresh tampilan hati
+        }
+    }
+
+    saveUserData();
+}
+
+// ==========================================
+// BLOK 14. SPEAKING MODULE LOGIC
+// ==========================================
+
+let currentSpeakingStep = 0;
+let speakingQuizData = [];
+let speakingAdWatchedInSession = 0; // Melacak iklan per sesi latihan
+
+/**
+ * Memulai modul speaking dengan pengecekan akses global
+ */
+function startSpeakingModule() {
+    // 1. Cek Akses menggunakan fungsi dari main.js
+    if (typeof canPlayModule === 'function' && !canPlayModule('speaking')) return;
+
+    const currentLv = window.userState.currentLevel || 1;
+    const dataVarName = `SPEAKING_DATA_LV${currentLv}`;
+    const levelData = window[dataVarName];
+
+    if (!levelData || levelData.length === 0) {
+        showToast(`Data Speaking Level ${currentLv} belum dimuat.`, 'error');
+        return;
+    }
+
+    // 2. Persiapan Data (5 soal acak)
+    speakingQuizData = [...levelData]
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 5);
+
+    currentSpeakingStep = 0;
+    speakingHearts = window.userState.isPremium ? 99 : 5;
+    speakingAdWatchedInSession = 0;
+    
+    showSpeakingChallenge();
+}
+
+function showSpeakingChallenge() {
+    const item = speakingQuizData[currentSpeakingStep];
+    const targetText = item.expected.replace(/'/g, "\\'");
+
+    let html = `
+        <div class="game-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <div style="color: #ff4b4b; font-weight: bold; font-size: 1.2rem;">
+                <i class="fas fa-heart"></i> ${window.userState.isPremium ? '∞' : speakingHearts}
+            </div>
+            <div style="color: #666; font-weight:bold;">Step ${currentSpeakingStep + 1}/5</div>
+        </div>
+        
+        <div style="text-align:center;">
+            <span style="background:var(--primary-blue); color:white; padding:4px 12px; border-radius:20px; font-size:0.7rem; text-transform:uppercase;">
+                Theme: ${item.theme}
+            </span>
+            
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 15px; margin: 15px 0; border-left: 5px solid var(--primary-blue);">
+                <p style="font-size: 0.8rem; color: #666; margin:0;">Question:</p>
+                <h3 style="margin: 5px 0; color: #333; font-size: 1.2rem;">"${item.question}"</h3>
+            </div>
+
+            <p style="color: #999; font-size: 0.8rem;">Your Answer:</p>
+            <h2 id="target-sentence" style="font-size: 1.6rem; margin: 10px 0 20px 0; color: var(--primary-blue); line-height:1.2;">
+                "${item.expected}"
+            </h2>
+            
+            <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 25px;">
+                <button onclick="playVoice('${targetText}', 0.9)" class="word-chip" style="border:none; background:#e3f2fd;">
+                    <i class="fas fa-volume-up"></i> Normal
+                </button>
+                <button onclick="playVoice('${targetText}', 0.5)" class="word-chip" style="border:none; background:#fff3e0; color:#ef6c00;">
+                    <i class="fas fa-turtle"></i> Slow
+                </button>
+            </div>
+
+            <div id="speaking-status" style="margin: 15px 0; font-weight: bold; min-height: 24px; color: #666; font-size:0.9rem;">
+                Tap the mic to speak...
+            </div>
+
+            <button id="mic-trigger" onclick="recordUserVoice('${targetText}', '${item.keyword}')" 
+                 style="width:85px; height:85px; background:var(--primary-blue); border-radius:50%; margin:0 auto; display:flex; align-items:center; justify-content:center; cursor:pointer; color:white; font-size:1.8rem; border:none; box-shadow: 0 6px 20px rgba(33, 150, 243, 0.3);">
+                <i class="fas fa-microphone"></i>
+            </button>
+        </div>
+    `;
+    openGameOverlay(html, "SPEAKING CHALLENGE");
+}
+
+function recordUserVoice(correctText, keyword) {
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'en-US';
+    const statusDiv = document.getElementById('speaking-status');
+    const micBtn = document.getElementById('mic-trigger');
+
+    recognition.onstart = () => {
+        micBtn.style.background = "#ff4b4b";
+        micBtn.style.transform = "scale(1.1)";
+        statusDiv.innerText = "Listening... Speak now!";
+    };
+
+    recognition.onresult = (event) => {
+        const result = event.results[0][0].transcript.toLowerCase().trim().replace(/[.,!?]/g, "");
+        const target = correctText.toLowerCase().trim().replace(/[.,!?]/g, "");
+
+        // 1. JAWABAN SEMPURNA
+        if (result === target) {
+            if (typeof playSuccessSound === 'function') playSuccessSound();
+            statusDiv.innerHTML = "<span style='color: #2b8a3e;'>Excellent! Point +10 ✨</span>";
+            
+            setTimeout(() => {
+                currentSpeakingStep++;
+                if (currentSpeakingStep < speakingQuizData.length) {
+                    showSpeakingChallenge();
+                } else {
+                    finishSpeakingModule();
+                }
+            }, 1500);
+        } 
+        // 2. JAWABAN PENDEK (Hanya kata kunci)
+        else if (result.includes(keyword.toLowerCase()) && result.length < target.length) {
+            statusDiv.innerHTML = `<span style='color: #f59f00;'>I heard "${result}", but use the FULL sentence!</span>`;
+            playVoice("Please say the full sentence", 1.0);
+            // Tidak kurangi nyawa
+        } 
+        // 3. SALAH
+        else {
+            if (typeof playErrorSound === 'function') playErrorSound();
+            
+            if (!window.userState.isPremium) {
+                speakingHearts--;
+            }
+            
+            statusDiv.innerHTML = `<span style='color: #c92a2a;'>You said: "${result}"</span>`;
+            
+            if (speakingHearts <= 0) {
+                setTimeout(showSpeakingGameOver, 1000);
+            } else {
+                setTimeout(showSpeakingChallenge, 2000);
+            }
+        }
+    };
+
+    recognition.onend = () => {
+        micBtn.style.background = "var(--primary-blue)";
+        micBtn.style.transform = "scale(1)";
+    };
+
+    recognition.start();
+}
+
+function finishSpeakingModule() {
+    const earnedXP = 50; 
+    
+    // Integrasi dengan addXP di main.js
+    if (typeof addXP === 'function') {
+        addXP(earnedXP);
+    } else {
+        window.userState.points += earnedXP;
+        saveUserData();
+    }
+
+    // Update stats harian
+    if (window.userState.stats.speaking) {
+        window.userState.stats.speaking.doneToday++;
+    }
+
+    const user = window.userState;
+    // Cek apakah butuh Exam (1000 XP) - Nilai 1000 diambil dari deskripsi Anda
+    const isExamReady = user.points >= 1000 && !user.isPremium;
+
+    let html = `
+        <div style="text-align:center; padding: 20px;">
+            <div style="font-size: 4rem; margin-bottom: 15px;">🏆</div>
+            <h2 style="color: var(--primary-blue); margin:0;">Level ${user.currentLevel} Speaking Clear!</h2>
+            
+            <div style="background: #f0f7ff; border-radius: 15px; padding: 20px; margin: 20px 0;">
+                <div style="font-size: 0.8rem; color: #666; text-transform: uppercase;">Total XP Collected</div>
+                <div style="font-size: 2.5rem; font-weight: bold; color: var(--primary-blue);">${user.points}</div>
+            </div>
+
+            ${isExamReady ? `
+                <div style="background: #fff3e0; padding: 15px; border-radius: 12px; border: 1px solid #ffb74d; margin-bottom: 20px;">
+                    <h4 style="color: #e65100; margin:0;">🎓 GLOBAL EXAM UNLOCKED!</h4>
+                    <p style="font-size: 0.8rem; margin: 5px 0;">You have reached 1000 XP. Take the exam to unlock Level ${user.currentLevel + 1}.</p>
+                    <button class="btn-upgrade" onclick="startGlobalLevelExam()" style="background:#e65100; color:white; width:100%; border:none; padding:12px; border-radius:10px; font-weight:bold; margin-top:10px;">START FINAL EXAM</button>
+                </div>
+            ` : ''}
+
+            <button class="btn-upgrade btn-premium" style="width:100%;" onclick="closeGame()">
+                KEMBALI KE MENU
+            </button>
+        </div>
+    `;
+    
+    openGameOverlay(html, "LESSON COMPLETE");
+    saveUserData();
+}
+
+function showSpeakingGameOver() {
+    let html = `
+        <div style="text-align:center; padding:10px;">
+            <div style="font-size: 4rem; margin-bottom: 15px;">💔</div>
+            <h2 style="margin:0;">Nyawa Habis!</h2>
+            <p style="color: #666; margin: 10px 0 20px 0;">Jangan menyerah! Latihan membuat pelafalanmu sempurna.</p>
+            
+            ${speakingAdWatchedInSession < 1 ? `
+                <button class="btn-upgrade btn-ad" onclick="watchAdForSpeakingExtra()" style="width:100%; background:#4CAF50; color:white; border:none; padding:15px; border-radius:12px; margin-bottom:10px; font-weight:bold;">
+                    <i class="fas fa-video"></i> NONTON IKLAN (+3 ❤️)
+                </button>
+            ` : ''}
+
+            <button class="btn-upgrade btn-premium" style="width:100%; background:#FFD700; color:#333; border:none; padding:15px; border-radius:12px; font-weight:bold;" onclick="closeGame(); showPremiumWall('Gunakan Premium untuk nyawa tak terbatas!');">
+                <i class="fas fa-crown"></i> AKTIFKAN PREMIUM
+            </button>
+            
+            <button onclick="closeGame()" style="width:100%; background:none; border:none; color:#999; margin-top:15px; cursor:pointer;">
+                Nanti Saja
+            </button>
+        </div>
+    `;
+    openGameOverlay(html, "GAME OVER");
+}
+
+function watchAdForSpeakingExtra() {
+    showToast("Memutar iklan...", "info");
+    setTimeout(() => {
+        speakingHearts = 3;
+        speakingAdWatchedInSession++; // Batasi agar tidak spam iklan di satu sesi
+        showSpeakingChallenge();
+        showToast("3 Nyawa ditambahkan!", "success");
+    }, 2000);
+}
+
+// ==========================================
+// BLOK 15: INDOGLISH SYSTEM INTEGRATION
+// ==========================================
+
+// Tambahkan ke dalam loadUserData atau inisialisasi awal userState
+if (!userState.stats.indoglish) {
+    userState.stats.indoglish = { doneToday: 0, dailyLimit: 5 };
+}
+
+/**
+ * Fungsi pemicu untuk membuka modul Indoglish
+ */
+window.startIndoglishModule = function() {
+    // 1. Cek Akses (Nyawa & Limit) via fungsi yang sudah ada di main.js
+    if (!canPlayModule('indoglish')) return;
+
+    // 2. Jika lolos, panggil fungsi start dari logic file
+    if (typeof startIndoglishBuster === 'function') {
+        startIndoglishBuster();
+    } else {
+        console.error("indoglish_logic.js belum dimuat!");
+        showToast("Modul sedang disiapkan...", "error");
+    }
+};

@@ -57,6 +57,10 @@
             <div id="full-archive-list" style="overflow-y: auto; flex: 1; display: grid; gap: 10px;"></div>
         </div>
     </div>
+    
+    <div id="app-logo" onclick="handleAdminClick()" style="cursor:pointer; padding: 8px; font-size: 9px; color: #ccc; text-align: center; letter-spacing: 2px;">
+        LINGUAQUEST ENGINE v2.0
+    </div>
 
     <header class="app-header">
         <div class="header-content">
@@ -93,39 +97,12 @@
             <div class="arena-section">
                 <h2 class="section-title">The Arena</h2>
                 <div class="level-pathway" id="arena-map">
-                    <div class="level-node active" onclick="switchTab('level-menu')">
-                        <div class="node-circle">1</div><span class="level-label">THE NEWBIE</span>
                     </div>
-                    <div class="level-node locked" onclick="showPremiumWall('Level 2 Terkunci')">
-                        <div class="node-circle"><i class="fas fa-lock"></i></div><span class="level-label">THE VOYAGER</span>
-                    </div>
-                </div>
             </div>
         </section> 
         
         <section id="level-menu-view" style="display:none; padding: 20px;">
-            <div class="menu-header">
-                <button onclick="switchTab('home')" class="btn-upgrade btn-secondary" style="width:auto; padding: 8px 15px;">
-                    <i class="fas fa-arrow-left"></i> Kembali
-                </button>
-                <h2 style="margin-top:15px; color: var(--primary-blue);">Level 1: The Newbie</h2>
-            </div>
-
-            <div class="sub-module-grid">
-                <div class="sub-card" onclick="startTenses()">
-                    <i class="fas fa-book" style="color: #4f46e5;"></i><span>Tenses</span>
-                </div>
-                <div class="sub-card" onclick="startDictation()">
-                    <i class="fas fa-headphones" style="color: #1cb0f6;"></i><span>Dictation</span>
-                </div>
-                <div class="sub-card" onclick="startStoryMode()">
-                    <i class="fas fa-book-open" style="color: #ff9600;"></i><span>Story Mode</span>
-                </div>
-                <div class="sub-card" onclick="startSpeakingMode()">
-                    <i class="fas fa-microphone" style="color: #58cc02;"></i><span>Speaking Mode</span>
-                </div>
-            </div>
-        </section>
+            </section>
 
         <div id="game-overlay" class="overlay" style="display: none;">
             <div class="game-header">
@@ -138,7 +115,6 @@
             <div id="game-content" style="padding: 20px; width: 100%; flex: 1; overflow-y: auto; background: #f5f7f8;">
                 <div id="tenses-module-ui">
                     <h2 style="text-align:center;">Tenses Master</h2>
-                    
                     <div class="tense-selector" id="tense-btns-container">
                         <button class="tense-btn" onclick="startTenseQuiz('s_present')">Simple Present</button>
                         <button class="tense-btn" onclick="startTenseQuiz('s_past')">Simple Past</button>
@@ -150,7 +126,6 @@
                         <p id="t-usage" style="color:#666; font-style:italic; margin-bottom:15px;"></p>
                         <p><strong><i class="fas fa-clock"></i> Keterangan Waktu:</strong> <span id="t-time"></span></p>
                         <hr>
-                        
                         <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top:15px;">
                             <div class="formula-box" style="background: #f0f7ff;">
                                 <h4>📝 Verbal Sentence</h4>
@@ -159,7 +134,6 @@
                                 <p><b>(?)</b> <span id="f-v-int"></span></p>
                                 <ul id="v-examples-list" style="font-style: italic; font-size: 0.9em; margin-top:10px;"></ul>
                             </div>
-
                             <div class="formula-box" style="background: #fffcf0;">
                                 <h4>🏷️ Nominal Sentence</h4>
                                 <p><b>(+)</b> <span id="f-n-pos"></span></p>
@@ -168,23 +142,13 @@
                                 <ul id="n-examples-list" style="font-style: italic; font-size: 0.9em; margin-top:10px;"></ul>
                             </div>
                         </div>
-
                         <div id="sandbox-area" style="margin-top:25px; border-top: 2px dashed #ddd; padding-top:20px;">
                             <h4 style="text-align:center;"><i class="fas fa-flask"></i> Tenses Sandbox</h4>
                             <input type="text" id="in-pos" class="sandbox-input" placeholder="Tulis kalimat positif (+)...">
                             <input type="text" id="in-neg" class="sandbox-input" placeholder="Tulis kalimat negatif (-)...">
                             <input type="text" id="in-int" class="sandbox-input" placeholder="Tulis kalimat tanya (?)...">
-                            
-                            <button onclick="validateMasterSandbox()" class="btn-upgrade btn-premium" style="width:100%; margin-top:10px;">
-                                CEK STRUKTUR KALIMAT
-                            </button>
+                            <button onclick="validateMasterSandbox()" class="btn-upgrade btn-premium" style="width:100%; margin-top:10px;">CEK STRUKTUR KALIMAT</button>
                             <div id="sandbox-res" style="margin-top:15px; text-align:center;"></div>
-                        </div>
-
-                        <div style="margin-top:30px; background:#f9f9f9; padding:15px; border-radius:10px; border: 1px solid #ddd;">
-                            <h4 style="margin-bottom:10px;"><i class="fas fa-search"></i> Quick Verb Check</h4>
-                            <input type="text" id="verb-check-input" onkeyup="liveVerbCheck()" placeholder="Ketik kata kerja dasar (ex: eat, go, study)..." style="width:100%; padding:10px; border-radius:5px; border:1px solid #ccc;">
-                            <div id="verb-check-res" style="margin-top:10px; font-weight:normal;"></div>
                         </div>
                     </div>
                 </div>
@@ -196,8 +160,7 @@
             <h2>Liga Mingguan</h2>
         </section>
 
-        <section id="profile-section" style="display:none; padding: 20px;">
-            </section>
+        <section id="profile-section" style="display:none; padding: 20px;"></section>
     </main>
 
     <div id="premium-modal" class="overlay" style="display: none; background: rgba(0,0,0,0.8); z-index: 9999; justify-content:center; align-items:center;">
@@ -218,43 +181,54 @@
     <audio id="sound-success" src="https://raw.githubusercontent.com/rafael-lua/LinguaQuest-Assets/main/success.mp3"></audio>
     <audio id="sound-error" src="https://raw.githubusercontent.com/rafael-lua/LinguaQuest-Assets/main/error.mp3"></audio>
 
-    <div id="app-logo" class="navbar-brand" style="cursor:pointer; padding: 10px; font-weight: bold; border: 1px solid #ccc;">
-       LINGUAQUEST LOGO
-    </div>
-
     <script src="scripts/data.js"></script>
+    <script src="scripts/irregular_verbs.js"></script>
+    <script src="scripts/idiom_data.js"></script>
 
     <script src="scripts/sb_level1.js"></script>
     <script src="scripts/sb_level2.js"></script>
     <script src="scripts/sb_level3.js"></script>
     <script src="scripts/sb_level4.js"></script>
     <script src="scripts/sb_level5.js"></script>
-    <script src="scripts/dictation_L1_sentences.js"></script>
-    <script src="scripts/idiom_data.js"></script>
-    <script src="scripts/irregular_verbs.js"></script>
-
     <script src="scripts/vocabulary_lv1.js"></script>
     <script src="scripts/vocabulary_lv2.js"></script>
     <script src="scripts/vocabulary_lv3.js"></script>
     <script src="scripts/vocabulary_lv4.js"></script>
     <script src="scripts/vocabulary_lv5.js"></script>
-
-    <script src="scripts/arena_logic.js"></script>
-    <script src="scripts/vocab_quiz_logic.js"></script>
-    <script src="scripts/tenses_logic.js"></script> 
-    <script src="scripts/story_logic.js"></script>
-    <script src="scripts/speaking_logic.js"></script>
-    <script src="scripts/level_exam_master.js"></script>
-    
     <script src="scripts/dictation_L1_sentences.js"></script>
     <script src="scripts/dictation_L2_sentences.js"></script>
     <script src="scripts/dictation_L3_sentences.js"></script>
     <script src="scripts/dictation_L4_sentences.js"></script>
     <script src="scripts/dictation_L5_sentences.js"></script>
+    <script src="scripts/story_data1.js"></script>
+    <script src="scripts/story_data2.js"></script>
+    <script src="scripts/story_data3.js"></script>
+    <script src="scripts/story_data4.js"></script>
+    <script src="scripts/story_data5.js"></script>
 
+    <script src="scripts/indoglish_data1.js"></script>
+    <script src="scripts/indoglish_data2.js"></script>
+    <script src="scripts/indoglish_data3.js"></script>
+    <script src="scripts/indoglish_data4.js"></script>
+    <script src="scripts/indoglish_data5.js"></script>
+    <script src="scripts/indoglish_logic.js"></script>
+
+    <script src="scripts/arena_logic.js"></script>
+    <script src="scripts/vocab_quiz_logic.js"></script>
+    <script src="scripts/tenses_logic.js"></script>
+    <script src="scripts/story_logic.js"></script>
+
+    <script src="scripts/speaking_data1.js"></script>
+    <script src="scripts/speaking_data2.js"></script>
+    <script src="scripts/speaking_data3.js"></script>
+    <script src="scripts/speaking_data4.js"></script>
+    <script src="scripts/speaking_data5.js"></script>
+    <script src="scripts/speaking_logic.js"></script>
+    
     <script src="scripts/main.js"></script>
-
+    <script src="scripts/level_exam_master.js"></script>
+    
     <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;"></div>
-
+    <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;"></div>
 </body>
 </html>

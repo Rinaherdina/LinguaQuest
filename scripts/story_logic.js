@@ -200,14 +200,11 @@ function checkStoryAnswer(selectedIndex) {
 }
 
 function finishStoryMode() {
-    // XP: 20 poin per jawaban benar (Maksimal 100 XP per teks)
     const totalXP = storyScore * 20; 
-    
-    if (window.userState) {
-        window.userState.points += totalXP;
-        // Kunci tanggal untuk limit harian
-        window.userState.lastStoryDate = new Date().toDateString();
-        if (typeof saveUserData === 'function') saveUserData();
+
+    // GANTI: Panggil fungsi dari main.js untuk memproses reward & nyawa
+    if (typeof processStoryReward === 'function') {
+        processStoryReward(storyScore, currentStoryData.questions.length);
     }
 
     openGameOverlay(`
@@ -229,6 +226,4 @@ function finishStoryMode() {
             </button>
         </div>
     `);
-    
-    if (typeof updateUI === 'function') updateUI();
 }

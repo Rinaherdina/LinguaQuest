@@ -721,3 +721,83 @@ body {
     border-radius: 8px;
     font-weight: bold;
 }
+
+/* ==========================================
+   BLOK 11: INDOGLISH BUSTER UI
+   Fungsi: Mengatur tampilan khusus game Anti-Indoglish
+   ========================================== */
+
+/* Container utama soal Indoglish */
+.indoglish-container {
+    text-align: center;
+    animation: fadeIn 0.5s ease;
+}
+
+/* Kotak Pilihan Jawaban */
+#indoglish-options {
+    display: grid;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+/* Styling Tombol Pilihan (Mengikuti gaya .word-chip tapi full width) */
+.indoglish-opt-btn {
+    width: 100%;
+    min-height: 70px;
+    padding: 15px;
+    background: white;
+    border: 2px solid var(--border-gray);
+    border-bottom: 5px solid var(--border-gray); /* Efek 3D seperti Duolingo */
+    border-radius: 18px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: all 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.indoglish-opt-btn:active {
+    transform: translateY(3px);
+    border-bottom-width: 2px;
+}
+
+/* Efek Hover Biru sesuai tema LinguaQuest */
+.indoglish-opt-btn:hover {
+    border-color: var(--primary-blue);
+    background-color: rgba(33, 150, 243, 0.05);
+}
+
+/* Kotak Penjelasan (Explanation Box) */
+#indoglish-explanation-box {
+    display: none;
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: left;
+    line-height: 1.6;
+    font-size: 0.95rem;
+    animation: slideUp 0.3s ease-out;
+    border-left: 5px solid transparent;
+}
+
+/* Animasi Perayaan (Pop In) untuk layar finish */
+@keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Khusus Header Indoglish di Overlay */
+.indoglish-header-badge {
+    background: var(--warning-orange);
+    color: white;
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 0 #e68a00;
+}
